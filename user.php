@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
-
+ 
 // Retrieve the user's type from the session or database
 $userId = $_SESSION['user_id'];
 $stmt = $conn->prepare("SELECT user_type FROM users WHERE id = ?");
