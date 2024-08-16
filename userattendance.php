@@ -78,7 +78,7 @@ if ($userType === 'admin') {
 ?>
 
 <!-- Include DataTables CSS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
 
 <section class="container-fluid" style="padding: 60px 0 40px 0;">
     <div class="container-fluid">
@@ -98,7 +98,23 @@ if ($userType === 'admin') {
                 </form>
             </div>
         </div>
-        <table id="userattendancedatatable" class="table table-striped" style="width:100%; border-radius: 20px !important;">
+        <div class="container-fluid">
+            <div class="row d-flex justify-content-end">
+                <div class="col-2">
+                    <div>
+                        <label class="form-label">Start Date</label>
+                        <input type="date" id="startDate" class="form-control">
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div>
+                        <label class="form-label">End Date</label>
+                        <input type="date" id="endDate" class="form-control">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <table id="admindatatable" class="table table-striped" style="width:100%; border-radius: 20px !important;">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -138,22 +154,6 @@ if ($userType === 'admin') {
         </table>
     </div>
 </section>
-
-
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-
-<script>
-    $(document).ready(function() {
-        $('#userattendancedatatable').DataTable({
-            "paging": true,
-            "searching": true,
-            "ordering": true,
-            "info": true
-        });
-    });
-</script>
-
 <?php
 // Include the footer based on user type
 if ($userType === 'admin') {
