@@ -67,12 +67,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: #fff;
         }
 
-        .profile-image-pic {
-            height: 200px;
-            width: 200px;
-            object-fit: cover;
-        }
-
         .vh-100 {
             height: 100vh;
         }
@@ -88,6 +82,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-shadow: 0 6px 10px 0 #222;
             background: linear-gradient(100deg, #73dc00, #01ceff);
         }
+
+        .circle-background {
+            display: inline-block;
+            background: #0e1c36;
+            padding: 20px;
+            border-radius: 50%;
+        }
+
+        .circle-background img {
+            display: block;
+            height: fit-content;
+            background: #0e1c36;
+            border: none;
+            /* width: 150px; */
+            /* height: 150px; */
+            border-radius: 52px;
+        }
+
+
+        .profile-image-pic {
+            height: 200px;
+            /* width: 200px; */
+            object-fit: cover;
+            padding: 18px;
+        }
     </style>
 </head>
 
@@ -96,12 +115,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="row w-100">
             <div class="col-md-6 offset-md-3">
                 <h2 class="text-center text-white mt-2">Tetra Technologies</h2>
-                <div class="text-center text-white"> Leave Management System</div>
+                <div class="text-center text-white">Leave Management System</div>
                 <div class="card my-3 form-box">
                     <form action="login.php" method="POST" class="card-body cardbody-color p-lg-5">
                         <div class="text-center">
-                            <img src="images/icons/company_logo.png" style="background: #0e1c36;" class="img-fluid profile-image-pic img-thumbnail rounded-circle my-3"
-                                width="200px" alt="profile">
+                            <!-- Container for the circular background -->
+                            <div class="circle-background">
+                                <img src="images/icons/company_logo.png" class="img-fluid profile-image-pic img-thumbnail" width="200px" alt="profile">
+                            </div>
                         </div>
                         <div class="mb-3">
                             <input type="text" class="form-control" id="login" name="login" placeholder="login" required>
@@ -117,6 +138,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         </div>
     </div>
+
 </body>
 
 </html>

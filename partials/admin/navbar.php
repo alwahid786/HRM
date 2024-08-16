@@ -148,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['changePassword'])) {
             display: flex;
             justify-content: end;
         }
-
+         
         /* .dataTables_wrapper .dataTables_paginate .paginate_button:hover,
         .dataTables_wrapper .dataTables_length select:hover,
         .dataTables_wrapper .dataTables_filter input:hover {
@@ -183,6 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['changePassword'])) {
             box-shadow: 10px -5px 0 0 rgba(0, 0, 0, 0.3s);
             background: linear-gradient(to right, #35592d, #1e5d75) !important;
         }
+        
     </style>
 </head>
 
@@ -206,6 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['changePassword'])) {
                         <ul class="dropdown-menu dropdownbg ">
                             <li><a class="dropdown-item" href="admincreateuser.php">Create User</a></li>
                             <li><a class="dropdown-item" href="adminuserlist.php">List of Users</a></li>
+                            <li><a class="dropdown-item" href="userattendance.php">User's Attendance</a></li>
                         </ul>
                     </li>
                     <li class="nav-item">

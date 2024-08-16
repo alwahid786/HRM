@@ -199,6 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['changePassword'])) {
                         <ul class="dropdown-menu dropdownbg">
                             <li><a class="dropdown-item" href="hrcreateuser.php">Create User</a></li>
                             <li><a class="dropdown-item" href="hruserlist.php">List of Users</a></li>
+                            <li><a class="dropdown-item" href="userattendance.php">User's Attendance</a></li>
                         </ul>
                     </li>
                     <li class="nav-item">

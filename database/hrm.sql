@@ -90,6 +90,27 @@ INSERT INTO `users` (`id`, `username`, `login`, `email`, `password`, `user_type`
 (23, 'caqovolyz', 'Sed culpa modi cons', 'fywujazy@mailinator.com', '$2y$10$dTzo7Mysh4MwTdlYMXFbSu0vKizyt/qk3EitzqVX4Au7cAJuL31s.', 'user', '2001-11-23', '2024-08-15 06:09:30', 'active', 0, NULL, NULL),
 (24, 'puxofukite', 'Doloremque qui cum e', 'hozewepa@mailinator.com', '$2y$10$gkLegTU96eIX19v3Ctqjfu11w6MpHrMTy.2WOXkaj2nnvixhulOLq', 'hradmin', '1982-09-04', '2024-08-15 06:57:43', 'active', 0, NULL, NULL);
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `attendance`
+--
+
+CREATE TABLE attendance (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `department` VARCHAR(255) NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    `no` INT(11) NOT NULL,
+    `date_time` DATETIME NOT NULL,
+    `status` VARCHAR(50) NOT NULL,
+    `location_id` INT(11) NOT NULL,
+    `id_number` VARCHAR(100) NOT NULL,
+    `verify_code` VARCHAR(255) NOT NULL,
+    `card_no` VARCHAR(100) NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+    PRIMARY KEY (`id`)
+);
+
 --
 -- Indexes for dumped tables
 --
