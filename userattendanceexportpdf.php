@@ -6,26 +6,6 @@ use Dompdf\Options;
 session_start();
 require 'config.php';
 
-// Check if the user is logged in
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
-}
-
-// Retrieve the user's type from the session or database
-$userId = $_SESSION['user_id'];
-$stmt = $conn->prepare("SELECT user_type FROM users WHERE id = ?");
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-$stmt->bind_result($userType);
-$stmt->fetch();
-$stmt->close();
-
-// Check if the user type is admin
-if ($userType != 'admin' && $userType != 'hradmin') {
-    header("Location: login.php");
-    exit();
-}
 
 // Get filter parameters from the POST request
 $startdate = isset($_POST['startdate']) ? $_POST['startdate'] : null;
