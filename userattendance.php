@@ -102,7 +102,7 @@ if ($userType === 'admin') {
         <div class="d-flex justify-content-between align-items-center">
             <h2 class="text-dark">All Attendance Records</h2>
             <div>
-                <form method="post" action="importattendance.php" enctype="multipart/form-data" style="display: flex; gap: 10px;">
+                <form id="DateRangeForm" method="post" action="importattendance.php" enctype="multipart/form-data" style="display: flex; gap: 10px;">
                     <div>
                         <input class="form-control" type="file" name="attendanceFile" accept=".xls,.xlsx" required>
                         <input type="hidden" name="export" value="true">
@@ -118,18 +118,18 @@ if ($userType === 'admin') {
         <div class="container-fluid">
             <div class="row d-flex justify-content-end">
                 <!-- Filter form -->
-                <form method="GET" action="userattendance.php" style="display: flex; gap: 10px; justify-content:end;">
+                <form id="attendanceForm" method="GET" action="userattendance.php" style="display: flex; gap: 10px; justify-content: end;">
                     <div class="col-2">
                         <div>
                             <label class="form-label">Start Date</label>
-                            <input class="form-control" placeholder="YYYY-MM-DD" type="text" name="startdate" value="<?php echo isset($_GET['startdate']) ? htmlspecialchars($_GET['startdate']) : ''; ?>" required>
+                            <input id="StartDate" class="form-control" type="date" name="startdate" value="<?php echo isset($_GET['startdate']) ? htmlspecialchars($_GET['startdate']) : ''; ?>" required>
                         </div>
                     </div>
                     <div class="col-2">
                         <div class="d-flex" style="gap: 15px;">
                             <div>
                                 <label class="form-label">End Date</label>
-                                <input class="form-control" placeholder="YYYY-MM-DD" type="text" name="enddate" value="<?php echo isset($_GET['enddate']) ? htmlspecialchars($_GET['enddate']) : ''; ?>" required>
+                                <input id="EndDate" class="form-control" type="date" name="enddate" value="<?php echo isset($_GET['enddate']) ? htmlspecialchars($_GET['enddate']) : ''; ?>" required>
                             </div>
                             <div style="padding-top: 32px;">
                                 <button type="submit" class="btn btn-primary">Filter</button>
@@ -166,36 +166,38 @@ if ($userType === 'admin') {
                 </tr>
             </thead>
             <tbody>
-    <?php if (!empty($attendanceData)) {
-        foreach ($attendanceData as $row) {
-            // Determine the status class based on the current row's status
-            if ($row['status'] == 'C/In') {
-                $statusClass = 'bg-green text-white';
-            } elseif ($row['status'] == 'C/Out') {
-                $statusClass = 'bg-red text-white';
-            } else {
-                $statusClass = '';
-            }
-            ?>
-            <tr>
-                <td><?php echo htmlspecialchars($row['id']); ?></td>
-                <td><?php echo htmlspecialchars($row['department']); ?></td>
-                <td><?php echo htmlspecialchars($row['name']); ?></td>
-                <td><?php echo htmlspecialchars($row['no']); ?></td>
-                <td><?php echo htmlspecialchars($row['date_time']); ?></td>
-                <td><div class="<?php echo $statusClass; ?>"><?php echo htmlspecialchars($row['status']); ?></div></td>
-                <td><?php echo htmlspecialchars($row['location_id']); ?></td>
-                <td><?php echo htmlspecialchars($row['id_number']); ?></td>
-                <td><?php echo htmlspecialchars($row['verify_code']); ?></td>
-                <td><?php echo htmlspecialchars($row['card_no']); ?></td>
-            </tr>
-        <?php }
-    } else { ?>
-        <tr>
-            <td colspan="10" class="text-center">No attendance data found for the selected date range.</td>
-        </tr>
-    <?php } ?>
-</tbody>
+                <?php if (!empty($attendanceData)) {
+                    foreach ($attendanceData as $row) {
+                        // Determine the status class based on the current row's status
+                        if ($row['status'] == 'C/In') {
+                            $statusClass = 'bg-green text-white';
+                        } elseif ($row['status'] == 'C/Out') {
+                            $statusClass = 'bg-red text-white';
+                        } else {
+                            $statusClass = '';
+                        }
+                ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($row['id']); ?></td>
+                            <td><?php echo htmlspecialchars($row['department']); ?></td>
+                            <td><?php echo htmlspecialchars($row['name']); ?></td>
+                            <td><?php echo htmlspecialchars($row['no']); ?></td>
+                            <td><?php echo htmlspecialchars($row['date_time']); ?></td>
+                            <td>
+                                <div class="<?php echo $statusClass; ?>"><?php echo htmlspecialchars($row['status']); ?></div>
+                            </td>
+                            <td><?php echo htmlspecialchars($row['location_id']); ?></td>
+                            <td><?php echo htmlspecialchars($row['id_number']); ?></td>
+                            <td><?php echo htmlspecialchars($row['verify_code']); ?></td>
+                            <td><?php echo htmlspecialchars($row['card_no']); ?></td>
+                        </tr>
+                    <?php }
+                } else { ?>
+                    <tr>
+                        <td colspan="10" class="text-center">No attendance data found for the selected date range.</td>
+                    </tr>
+                <?php } ?>
+            </tbody>
 
         </table>
     </div>
@@ -213,6 +215,31 @@ if ($userType === 'admin') {
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 
+<script>
+document.getElementById('attendanceForm').addEventListener('submit', function(event) {
+    var startDateInput = document.getElementById('StartDate');
+    var endDateInput = document.getElementById('EndDate');
+
+    var startDateValue = startDateInput.value;
+    var endDateValue = endDateInput.value;
+
+    if (startDateValue) {
+        var startDateParts = startDateValue.split('-');
+        if (startDateParts.length === 3) {
+            // Format to YYYY-DD-MM
+            startDateInput.value = startDateParts[0] + '-' + startDateParts[2] + '-' + startDateParts[1];
+        }
+    }
+
+    if (endDateValue) {
+        var endDateParts = endDateValue.split('-');
+        if (endDateParts.length === 3) {
+            // Format to YYYY-DD-MM
+            endDateInput.value = endDateParts[0] + '-' + endDateParts[2] + '-' + endDateParts[1];
+        }
+    }
+});
+</script>
 <script>
     $(document).ready(function() {
         $('#userattendancedatatable').DataTable({
