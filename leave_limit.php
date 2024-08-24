@@ -33,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
 
-    // Prepare the SQL query to update leave limit and leave period
     $stmt = $conn->prepare("UPDATE users SET leave_limit = ?, leave_start_date = ?, leave_end_date = ? WHERE id = ?");
     $stmt->bind_param("issi", $leaveLimit, $leaveStartDate, $leaveEndDate, $userIdToUpdate);
 
