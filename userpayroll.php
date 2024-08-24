@@ -3,7 +3,7 @@ session_start();
 require 'vendor/autoload.php';
 require 'config.php';
 
-use PhpOffice\PhpSpreadsheet\IOFactory;
+// use PhpOffice\PhpSpreadsheet\IOFactory;
 
 // Check if the user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -25,45 +25,21 @@ if ($userType != 'admin' && $userType != 'hradmin') {
     exit();
 }
 
-$importedData = [];
-
-// If a file is uploaded and processed
-if (isset($_POST['export']) && $_POST['export'] == 'true' && isset($_FILES['attendanceFile'])) {
-    $file = $_FILES['attendanceFile']['tmp_name'];
-    $fileName = $_FILES['attendanceFile']['name'];
-    $fileError = $_FILES['attendanceFile']['error'];
-
-    // Check for upload errors
-    if ($fileError !== UPLOAD_ERR_OK) {
-        die('Error uploading file: ' . $fileError);
-    }
-
-    // Check file extension
-    $allowedExtensions = ['xls', 'xlsx'];
-    $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
-
-    if (!in_array($fileExtension, $allowedExtensions)) {
-        die('Invalid file type. Only .xls and .xlsx files are allowed.');
-    }
-
-    try {
-        // Load the spreadsheet
-        $spreadsheet = IOFactory::load($file);
-        $worksheet = $spreadsheet->getActiveSheet();
-        $importedData = $worksheet->toArray();
-    } catch (Exception $e) {
-        die('Error loading file "' . pathinfo($fileName, PATHINFO_BASENAME) . '": ' . $e->getMessage());
-    }
-}
-
 // Fetch attendance data from the database
 $attendanceData = [];
 $startdate = isset($_GET['startdate']) ? $_GET['startdate'] : null;
 $enddate = isset($_GET['enddate']) ? $_GET['enddate'] : null;
+$user_no = isset($_GET['user_no']) ? $_GET['user_no'] : null;
 
-if ($startdate && $enddate) {
+if ($startdate && $enddate && $user_no) {
+    $stmt = $conn->prepare("SELECT * FROM attendance WHERE DATE(date_time) BETWEEN ? AND ? AND no = ?");
+    $stmt->bind_param("sss", $startdate, $enddate, $user_no);
+} elseif ($startdate && $enddate) {
     $stmt = $conn->prepare("SELECT * FROM attendance WHERE DATE(date_time) BETWEEN ? AND ?");
     $stmt->bind_param("ss", $startdate, $enddate);
+} elseif ($user_no) {
+    $stmt = $conn->prepare("SELECT * FROM attendance WHERE no = ?");
+    $stmt->bind_param("s", $user_no);
 } else {
     $stmt = $conn->prepare("SELECT * FROM attendance");
 }
@@ -75,15 +51,29 @@ if ($result->num_rows > 0) {
         $attendanceData[] = $row;
     }
 }
-
-//  for show all attendance data 
-// Reset filters if the user requesting to show all data user press Show All button then get all data  
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['showAllAttendance'])) {
-    header("Location: userattendance.php");
-    exit();
-}
 $stmt->close();
 
+// Calculate total shift hours
+$totalHours = 0;
+$checkInTime = null;
+
+foreach ($attendanceData as $row) {
+    $status = $row['status'];
+    $dateTime = new DateTime($row['date_time']);
+
+    if ($status == 'C/In') {
+        $checkInTime = $dateTime;
+    } elseif ($status == 'C/Out' && $checkInTime !== null) {
+        $interval = $checkInTime->diff($dateTime);
+        $hours = $interval->h;
+        $minutes = $interval->i;
+        $totalHours += ($hours * 60) + $minutes; 
+        $checkInTime = null;
+    }
+}
+
+// Convert total minutes to hours and minutes
+$totalHoursDisplay = floor($totalHours / 60) . ' hours ' . ($totalHours % 60) . ' minutes';
 
 // Include the navbar based on user type
 if ($userType === 'admin') {
@@ -93,42 +83,34 @@ if ($userType === 'admin') {
 }
 ?>
 
-<!-- Include DataTables CSS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
 
 <section class="container-fluid" style="padding: 60px 0 40px 0;">
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center">
             <h2 class="text-dark">All Attendance Records</h2>
-            <div>
-                <form id="DateRangeForm" method="post" action="importattendance.php" enctype="multipart/form-data" style="display: flex; gap: 10px;">
-                    <div>
-                        <input class="form-control" type="file" name="attendanceFile" accept=".xls,.xlsx" required>
-                        <input type="hidden" name="export" value="true">
-                    </div>
-                    <div>
-                        <button type="submit" class="btn" style="background-color: #11965c;">
-                            <img src="images/icons/excel.png" width="16px" height="16px">
-                        </button>
-                    </div>
-                </form>
-            </div>
         </div>
         <div class="container-fluid">
             <div class="row d-flex justify-content-end">
                 <!-- Filter form -->
-                <form id="attendanceForm" method="GET" action="userattendance.php" style="display: flex; gap: 10px; justify-content: end;">
+                <form id="attendanceForm" method="GET" action="userpayroll.php" style="display: flex; gap: 10px; justify-content: end;">
                     <div class="col-2">
                         <div>
                             <label class="form-label">Start Date</label>
-                            <input id="StartDate" class="form-control" type="date" name="startdate" value="<?php echo isset($_GET['startdate']) ? htmlspecialchars($_GET['startdate']) : ''; ?>" required>
+                            <input id="StartDate" class="form-control" type="date" name="startdate" value="<?php echo htmlspecialchars($startdate); ?>" required>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div>
+                            <label class="form-label">End Date</label>
+                            <input id="EndDate" class="form-control" type="date" name="enddate" value="<?php echo htmlspecialchars($enddate); ?>" required>
                         </div>
                     </div>
                     <div class="col-2">
                         <div class="d-flex" style="gap: 15px;">
                             <div>
-                                <label class="form-label">End Date</label>
-                                <input id="EndDate" class="form-control" type="date" name="enddate" value="<?php echo isset($_GET['enddate']) ? htmlspecialchars($_GET['enddate']) : ''; ?>" required>
+                                <label class="form-label">User No</label>
+                                <input id="user_no" class="form-control" type="number" name="user_no" value="<?php echo htmlspecialchars($user_no); ?>" required>
                             </div>
                             <div style="padding-top: 32px;">
                                 <button type="submit" class="btn btn-primary">Filter</button>
@@ -137,23 +119,14 @@ if ($userType === 'admin') {
                         <br>
                     </div>
                 </form>
-
-                <div class="d-flex justify-content-end">
-                    <form method="POST" action="" style="margin-left: 15px;">
-                        <button type="submit" name="showAllAttendance" class="btn btn-primary">Show All</button>
-                    </form>
-                    <form method="POST" action="userattendanceexportpdf.php" style="margin-left: 15px;">
-                        <input type="hidden" name="startdate" value="<?php echo htmlspecialchars(isset($_GET['startdate']) ? $_GET['startdate'] : ''); ?>">
-                        <input type="hidden" name="enddate" value="<?php echo htmlspecialchars(isset($_GET['enddate']) ? $_GET['enddate'] : ''); ?>">
-                        <button type="submit" name="exportPdf" class="btn btn-primary">Export to PDF</button>
-                    </form>
-                    <a href="userpayroll.php" class="btn btn-dark text-white ">
-                        User's Payroll
-                    </a>
+                <div class="col-2">
+                    <label class="form-label">Total Hours</label>
+                    <input readonly id="totalhours" class="form-control" type="text" name="totalhours" value="<?php echo htmlspecialchars($totalHoursDisplay); ?>">
                 </div>
             </div>
         </div>
-        <table id="userattendancedatatable" class="table table-striped" style="width:100%; border-radius: 20px !important;">
+
+         <table id="userattendancedatatable" class="table table-striped" style="width:100%; border-radius: 20px !important;">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -277,6 +250,15 @@ if ($userType === 'admin') {
     </div>
 </section>
 
+<!-- Include DataTables JS -->
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        $('#userattendancedatatable').DataTable();
+    });
+</script>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
@@ -322,9 +304,6 @@ if ($userType === 'admin') {
         });
     });
 </script>
-
-
-
 
 <?php
 // Include the footer based on user type
