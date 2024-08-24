@@ -83,9 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['showAllAttendance']))
     exit();
 }
 $stmt->close();
-?>
 
-<?php
+
 // Include the navbar based on user type
 if ($userType === 'admin') {
     include_once 'partials/admin/navbar.php';
@@ -163,12 +162,45 @@ if ($userType === 'admin') {
                     <th>ID Number</th>
                     <th>Verify Code</th>
                     <th>Card No</th>
+                    <th>Late & After Minutes</th>
+                    <th>Total Shift Hours</th>
                 </tr>
             </thead>
             <tbody>
-                <?php if (!empty($attendanceData)) {
+                <?php
+                $userShifts = [];
+
+                if (!empty($attendanceData)) {
                     foreach ($attendanceData as $row) {
-                        // Determine the status class based on the current row's status
+                        $date = new DateTime($row['date_time']);
+                        $dateKey = $date->format('Y-m-d');
+
+                        if ($row['status'] == 'C/In') {
+                            $userShifts[$dateKey]['check_in'] = $date;
+                        } elseif ($row['status'] == 'C/Out') {
+                            $userShifts[$dateKey]['check_out'] = $date;
+                        }
+                    }
+                    $totalWorkingHours = [];
+                    $checkInTime = null;
+
+                    foreach ($attendanceData as $row) {
+                        $status = $row['status'];
+                        $dateTime = new DateTime($row['date_time']);
+
+                        if ($status == 'C/In') {
+                            $checkInTime = $dateTime;
+                        } elseif ($status == 'C/Out' && $checkInTime !== null) {
+                            $interval = $checkInTime->diff($dateTime);
+                            $hours = $interval->h;
+                            $minutes = $interval->i;
+
+                            $totalWorkingHoursForSession = $hours . ' hours ' . $minutes . ' minutes';
+                            $checkInTime = null;
+                        } else {
+                            $totalWorkingHoursForSession = 0;
+                        }
+
                         if ($row['status'] == 'C/In') {
                             $statusClass = 'bg-green text-white';
                         } elseif ($row['status'] == 'C/Out') {
@@ -176,33 +208,70 @@ if ($userType === 'admin') {
                         } else {
                             $statusClass = '';
                         }
-                ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($row['id']); ?></td>
-                            <td><?php echo htmlspecialchars($row['department']); ?></td>
-                            <td><?php echo htmlspecialchars($row['name']); ?></td>
-                            <td><?php echo htmlspecialchars($row['no']); ?></td>
-                            <td><?php echo htmlspecialchars($row['date_time']); ?></td>
-                            <td>
-                                <div class="<?php echo $statusClass; ?>"><?php echo htmlspecialchars($row['status']); ?></div>
-                            </td>
-                            <td><?php echo htmlspecialchars($row['location_id']); ?></td>
-                            <td><?php echo htmlspecialchars($row['id_number']); ?></td>
-                            <td><?php echo htmlspecialchars($row['verify_code']); ?></td>
-                            <td><?php echo htmlspecialchars($row['card_no']); ?></td>
-                        </tr>
-                    <?php }
-                } else { ?>
-                    <tr>
-                        <td colspan="10" class="text-center">No attendance data found for the selected date range.</td>
-                    </tr>
-                <?php } ?>
-            </tbody>
 
+                        echo "<tr>";
+                        echo "<td>" . htmlspecialchars($row['id']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['department']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['name']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['no']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['date_time']) . "</td>";
+                        echo "<td><div class='" . $statusClass . "'>" . htmlspecialchars($row['status']) . "</div></td>";
+                        echo "<td>" . htmlspecialchars($row['location_id']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['id_number']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['verify_code']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['card_no']) . "</td>";
+                        echo "<td>";
+
+                        // Late Minutes (Red background)
+                        if ($row['status'] == 'C/In') {
+                            $dateTime = new DateTime($row['date_time']);
+                            $compareTime = new DateTime($dateTime->format('Y-m-d') . ' 09:00:00');
+                            $LateTime = new DateTime($dateTime->format('Y-m-d') . ' 09:30:00');
+                            if ($dateTime > $LateTime) {
+                                $interval = $compareTime->diff($dateTime);
+                                $lateMinutes = $interval->h * 60 + $interval->i;
+                                    echo "<span style='font-weight: 500; color: red;'>" . $lateMinutes . " minutes late</span>";
+                            } else {
+                                echo 'On time';
+                            }
+                        } elseif ($row['status'] == 'C/Out') {
+                            $clockOutTime = new DateTime($row['date_time']);
+                            $sixPM = new DateTime($clockOutTime->format('Y-m-d') . ' 18:00:00');
+                            if ($clockOutTime > $sixPM) {
+                                $interval = $sixPM->diff($clockOutTime);
+                                $additionalMinutes = $interval->h * 60 + $interval->i;
+                                echo "<span style='font-weight: 500; color: green;'>CheckOut, " . $additionalMinutes . " minutes after 6:00 PM</span>";
+                            } elseif ($clockOutTime < $sixPM) {
+                                $interval = $sixPM->diff($clockOutTime);
+                                $additionalMinutes = $interval->h * 60 + $interval->i;
+                                echo "<span style='font-weight: 500; color: #e8a215;'>CheckOut, " . $additionalMinutes . " minutes before 6:00 PM</span>";
+                            }
+                        } else {
+                            echo '';
+                        }
+                        echo "</td>";
+                        if ($status == 'C/Out') {
+                            if ($totalWorkingHoursForSession < 9) {
+                                echo "<td style='background-color: #ede909 ;' >" . $totalWorkingHoursForSession . "</td>";
+                            } else {
+                                echo "<td>" . $totalWorkingHoursForSession . "</td>";
+                            }
+                        } else {
+                            echo "<td>--</td>";
+                        }
+
+                        echo "</tr>";
+                    }
+                } else {
+                    echo "<tr>
+                    <td colspan='12' class='text-center'>No attendance data found for the selected date range.</td>
+                    </tr>";
+                }
+                ?>
+            </tbody>
         </table>
     </div>
 </section>
-
 
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
@@ -212,33 +281,32 @@ if ($userType === 'admin') {
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+
 
 <script>
-document.getElementById('attendanceForm').addEventListener('submit', function(event) {
-    var startDateInput = document.getElementById('StartDate');
-    var endDateInput = document.getElementById('EndDate');
+    document.getElementById('attendanceForm').addEventListener('submit', function(event) {
+        var startDateInput = document.getElementById('StartDate');
+        var endDateInput = document.getElementById('EndDate');
 
-    var startDateValue = startDateInput.value;
-    var endDateValue = endDateInput.value;
+        var startDateValue = startDateInput.value;
+        var endDateValue = endDateInput.value;
 
-    if (startDateValue) {
-        var startDateParts = startDateValue.split('-');
-        if (startDateParts.length === 3) {
-            // Format to YYYY-DD-MM
-            startDateInput.value = startDateParts[0] + '-' + startDateParts[2] + '-' + startDateParts[1];
+        if (startDateValue) {
+            var startDateParts = startDateValue.split('-');
+            if (startDateParts.length === 3) {
+                // Format to YYYY-DD-MM
+                startDateInput.value = startDateParts[0] + '-' + startDateParts[2] + '-' + startDateParts[1];
+            }
         }
-    }
 
-    if (endDateValue) {
-        var endDateParts = endDateValue.split('-');
-        if (endDateParts.length === 3) {
-            // Format to YYYY-DD-MM
-            endDateInput.value = endDateParts[0] + '-' + endDateParts[2] + '-' + endDateParts[1];
+        if (endDateValue) {
+            var endDateParts = endDateValue.split('-');
+            if (endDateParts.length === 3) {
+                // Format to YYYY-DD-MM
+                endDateInput.value = endDateParts[0] + '-' + endDateParts[2] + '-' + endDateParts[1];
+            }
         }
-    }
-});
+    });
 </script>
 <script>
     $(document).ready(function() {
@@ -246,13 +314,8 @@ document.getElementById('attendanceForm').addEventListener('submit', function(ev
             "paging": true,
             "searching": true,
             "ordering": true,
-            "info": true
+            "info": true,
         });
-    });
-</script>
-<script>
-    $(document).ready(function() {
-        $('#admindatatable').DataTable();
     });
 </script>
 
