@@ -7,31 +7,6 @@ use Dompdf\Options;
 session_start();
 require 'config.php';
 
-// Check if the user is logged in
-if (!isset($_SESSION['user_id'])) {
-    // If not logged in, redirect to the login page
-    header("Location: login.php");
-    exit();
-}
-
-
-
-// Retrieve the user's type from the session or database
-$userId = $_SESSION['user_id'];
-$stmt = $conn->prepare("SELECT user_type FROM users WHERE id = ?");
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-$stmt->bind_result($userType);
-$stmt->fetch();
-$stmt->close();
-
-// Check if the user type is admin
-if ($userType != 'admin') {
-    // If not 'admin', redirect to the login page
-    header("Location: login.php");
-    exit();
-}
-
 // Retrieve all leave requests with action details
 $stmt = $conn->prepare("SELECT l.id, u.username, l.start_date, l.end_date, l.duration, l.leave_type, l.reason, l.status,
                                 COALESCE(a.username, 'N/A') AS action_by, l.action_date
