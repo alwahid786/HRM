@@ -3,8 +3,6 @@ session_start();
 require 'vendor/autoload.php';
 require 'config.php';
 
-// use PhpOffice\PhpSpreadsheet\IOFactory;
-
 // Check if the user is logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -43,6 +41,7 @@ if ($startdate && $enddate && $user_no) {
 } else {
     $stmt = $conn->prepare("SELECT * FROM attendance");
 }
+
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -53,27 +52,53 @@ if ($result->num_rows > 0) {
 }
 $stmt->close();
 
-// Calculate total shift hours
-$totalHours = 0;
+// Calculate total shift hours for the date range
+$totalMinutesWorked = 0;
+$requiredHoursPerDay = 9 * 60;
+$daysWorked = [];
 $checkInTime = null;
 
 foreach ($attendanceData as $row) {
     $status = $row['status'];
     $dateTime = new DateTime($row['date_time']);
+    $currentDate = $dateTime->format('Y-m-d');
 
     if ($status == 'C/In') {
         $checkInTime = $dateTime;
     } elseif ($status == 'C/Out' && $checkInTime !== null) {
         $interval = $checkInTime->diff($dateTime);
-        $hours = $interval->h;
-        $minutes = $interval->i;
-        $totalHours += ($hours * 60) + $minutes; 
+        $minutesWorked = ($interval->h * 60) + $interval->i;
+
+        // Add worked minutes to the respective day
+        if (!isset($daysWorked[$currentDate])) {
+            $daysWorked[$currentDate] = 0;
+        }
+        $daysWorked[$currentDate] += $minutesWorked;
+
         $checkInTime = null;
     }
 }
 
-// Convert total minutes to hours and minutes
-$totalHoursDisplay = floor($totalHours / 60) . ' hours ' . ($totalHours % 60) . ' minutes';
+
+$totalWorkedMinutes = array_sum($daysWorked);
+
+$numberOfDays = count($daysWorked);
+$requiredTotalMinutes = $numberOfDays * $requiredHoursPerDay;
+
+// Determine overtime or remaining hours
+$extraOrMissingMinutes = $totalWorkedMinutes - $requiredTotalMinutes;
+if ($extraOrMissingMinutes > 0) {
+    $comparisonResult = "User worked " . floor($extraOrMissingMinutes / 60) . " hours and " . ($extraOrMissingMinutes % 60) . " minutes overtime.";
+} elseif ($extraOrMissingMinutes < 0) {
+    $comparisonResult = "User worked " . abs(floor($extraOrMissingMinutes / 60)) . " hours and " . abs($extraOrMissingMinutes % 60) . " minutes less.";
+} else {
+    $comparisonResult = "User worked exactly the required hours.";
+}
+
+// Convert total minutes to hours and minutes for display
+$totalHoursWorked = floor($totalWorkedMinutes / 60);
+$totalMinutesWorked = $totalWorkedMinutes % 60;
+$totalHoursDisplay = $totalHoursWorked . ' hours ' . $totalMinutesWorked . ' minutes';
 
 // Include the navbar based on user type
 if ($userType === 'admin') {
@@ -81,9 +106,14 @@ if ($userType === 'admin') {
 } elseif ($userType === 'hradmin') {
     include_once 'partials/hr/navbar.php';
 }
-?>
 
+?>
+     
 <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+
+
+<h3>Total Working Hours: <?php echo $totalHoursDisplay; ?></h3>
+<h4><?php echo $comparisonResult; ?></h4>
 
 <section class="container-fluid" style="padding: 60px 0 40px 0;">
     <div class="container-fluid">
@@ -92,6 +122,20 @@ if ($userType === 'admin') {
         </div>
         <div class="container-fluid">
             <div class="row d-flex justify-content-end">
+
+            <div class="container-fluid">
+            <div class="row d-flex justify-content-end">
+                <div class="col-2">
+                    <label class="form-label">Total Hours Worked</label>
+                    <input readonly id="totalhours" class="form-control" type="text" value="<?php echo htmlspecialchars($totalHoursDisplay); ?>">
+                </div>
+                <div class="col-2">
+                    <label class="form-label">Comparison</label>
+                    <input readonly id="comparisonResult" class="form-control" type="text" value="<?php echo htmlspecialchars($comparisonResult); ?>">
+                </div>
+            </div>
+        </div>
+
                 <!-- Filter form -->
                 <form id="attendanceForm" method="GET" action="userpayroll.php" style="display: flex; gap: 10px; justify-content: end;">
                     <div class="col-2">
@@ -119,10 +163,6 @@ if ($userType === 'admin') {
                         <br>
                     </div>
                 </form>
-                <div class="col-2">
-                    <label class="form-label">Total Hours</label>
-                    <input readonly id="totalhours" class="form-control" type="text" name="totalhours" value="<?php echo htmlspecialchars($totalHoursDisplay); ?>">
-                </div>
             </div>
         </div>
 
@@ -250,14 +290,7 @@ if ($userType === 'admin') {
     </div>
 </section>
 
-<!-- Include DataTables JS -->
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        $('#userattendancedatatable').DataTable();
-    });
-</script>
 
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>

@@ -208,6 +208,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['changePassword'])) {
                             <li><a class="dropdown-item" href="admincreateuser.php">Create User</a></li>
                             <li><a class="dropdown-item" href="adminuserlist.php">List of Users</a></li>
                             <li><a class="dropdown-item" href="userattendance.php">User's Attendance</a></li>
+                            <li><a class="dropdown-item" href="userpayroll.php">User Payroll</a></li>
                         </ul>
                     </li>
                     <li class="nav-item">

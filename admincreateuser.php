@@ -32,9 +32,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'] ?? null;
     $userType = $_POST['userType'] ?? null;
     $hiringDate = $_POST['hiringDate'] ?? null;
+    $role = $_POST['role'] ?? null;
+    $salary = $_POST['salary'] ?? null;
+    $user_no = $_POST['user_no'] ?? null;
 
     // Check if any field is empty
-    if (empty($username) || empty($login) || empty($email) || empty($password) || empty($userType) || empty($hiringDate)) {
+    if (empty($username) || empty($login) || empty($email) || empty($password) || empty($userType) || empty($hiringDate) || empty($role) || empty($salary)|| empty($user_no)) {
         die("Please fill in all fields.");
     }
 
@@ -53,8 +56,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
     // Prepare and bind
-    $stmt = $conn->prepare("INSERT INTO users (username, login, email, password, user_type, hiring_date) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("ssssss", $username, $login, $email, $hashedPassword, $userType, $hiringDate);
+    $stmt = $conn->prepare("INSERT INTO users (user_no, username, login, email, password, user_type, hiring_date,role,salary) VALUES ( ?,?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("isssssssi", $user_no, $username, $login, $email, $hashedPassword, $userType, $hiringDate, $role, $salary);
 
     // Execute the query
     if ($stmt->execute()) {
@@ -113,6 +116,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="col-md-6">
           <label for="hiringDate" class="form-label">Hiring Date</label>
           <input type="date" class="form-control" id="hiringDate" name="hiringDate">
+        </div>
+      </div>
+      <div class="row mb-2">
+        <div class="col-md-4">
+          <label class="form-label">User Role</label>
+          <input type="text" class="form-control" name="role" >
+        </div>
+        <div class="col-md-4">
+          <label  class="form-label">User Salary</label>
+          <input type="text" class="form-control" name="salary">
+        </div>
+        <div class="col-md-4">
+          <label  class="form-label">User No</label>
+          <input type="number" class="form-control" name="user_no">
         </div>
       </div>
       <div class="d-flex justify-content-end">
