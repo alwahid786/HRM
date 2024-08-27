@@ -8,10 +8,10 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $userId = $_SESSION['user_id'];
-$stmt = $conn->prepare("SELECT username, user_type, leave_limit, leave_start_date, leave_end_date FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT username, user_type, leave_limit, leave_start_date, leave_end_date, user_no FROM users WHERE id = ?");
 $stmt->bind_param("i", $userId);
 $stmt->execute();
-$stmt->bind_result($username, $userType, $leaveLimit, $leaveStartDate, $leaveEndDate);
+$stmt->bind_result($username, $userType, $leaveLimit, $leaveStartDate, $leaveEndDate, $userNo);
 $stmt->fetch();
 $stmt->close();
 
@@ -67,13 +67,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($existingRequests > 0) {
             $error = "You already have a leave request for today.";
         } else {
-            // Insert the leave request
-            $stmt = $conn->prepare("INSERT INTO leaves (user_id, username, start_date, end_date, duration, leave_type, reason, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'Requested')");
-            $stmt->bind_param("isssdss", $userId, $username, $startDate, $endDate, $duration, $leaveType, $reason);
+            // Insert the leave request, including user_no
+            $stmt = $conn->prepare("INSERT INTO leaves (user_id, user_no, username, start_date, end_date, duration, leave_type, reason, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Requested')");
+            $stmt->bind_param("iisssdss", $userId, $userNo, $username, $startDate, $endDate, $duration, $leaveType, $reason);
             $stmt->execute();
             $stmt->close();
 
-            header("Location: userleaves.php.");
+            header("Location: userleaves.php");
             exit();
         }
     }
