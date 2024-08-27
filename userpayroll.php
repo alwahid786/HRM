@@ -485,8 +485,14 @@ if ($userType === 'admin') {
     </div>
 </section>
 
+<div>
+    <form id="exportForm" action="export_salaryslip.php" method="post">
+        <button type="submit">Export Salary Slip</button>
+        <input type="hidden" name="html_content" id="htmlContent" />
+    </form>
+</div>
 
-<div class="payslip-container">
+<div class="payslip-container" id="salaryslipContent">
     <div class="payslip-header">
         <h1>Payslip</h1>
         <p>Tetra Technologies<br>
@@ -544,8 +550,8 @@ if ($userType === 'admin') {
         </thead>
         <tbody>
             <tr>
-                <td>Basic</td>
-                <td><?php echo $user_salary ?></td>
+                <th>Basic Salary</th>
+                <th><?php echo $user_salary ?></th>
             </tr>
             <tr>
                 <td>Overtime</td>
@@ -560,19 +566,20 @@ if ($userType === 'admin') {
             <tr>
                 <td>Overtime Amount</td>
                 <td><?php
-                    $user_salary_over_time = 0;
+                    $user_salary_allownce = 0;
                     if ($extraOrMissingMinutes > 0) {
                         $overtimeamount = (($extraOrMissingMinutes * $perminsalary) * 1.5);
                         echo number_format($overtimeamount);
-                        $user_salary_over_time = $overtimeamount + $user_salary;
+                        $user_salary_allownce = $overtimeamount + $user_salary;
                     } else {
                         echo 0;
                     }
+                    $user_salary_allownce = $user_salary_allownce ? $user_salary_allownce : $user_salary;
                     ?></td>
             </tr>
             <tr class="total-row">
                 <td>Total Earnings</td>
-                <td><?php echo number_format($user_salary_over_time) ?></td>
+                <td><?php echo number_format($user_salary_allownce) ?></td>
             </tr>
         </tbody>
     </table>
@@ -588,7 +595,7 @@ if ($userType === 'admin') {
                 <td>Time Off</td>
                 <td><?php
                     if ($extraOrMissingMinutes < 0) {
-                        echo $extraOrMissingMinutes . ' mins';
+                        echo   abs($extraOrMissingMinutes) . ' mins';
                     } else {
                         echo 0;
                     } ?></td>
@@ -596,11 +603,26 @@ if ($userType === 'admin') {
             <tr>
                 <td>Time Off Amount</td>
                 <td><?php
-                    $user_salary_off_time = 0;
+                    $user_salary_deduction = 0;
+                    $offtimeamount = 0;
                     if ($extraOrMissingMinutes < 0) {
                         $offtimeamount = (($extraOrMissingMinutes * $perminsalary));
-                        echo number_format($offtimeamount);
-                        $user_salary_off_time = $user_salary - $offtimeamount;
+                        echo number_format(abs($offtimeamount));
+                        $user_salary_deduction = $user_salary_allownce - abs($offtimeamount);
+                    } else {
+                        echo 0;
+                    }
+                    ?></td>
+            </tr>
+            <tr>
+                <td>Absent Deduction</td>
+                <td><?php
+                    $user_salary_absent = 0;
+                    $absentamount = 0;
+                    if ($totalabsents > 0) {
+                        $absentamount = (($totalabsents * $perdaysalary));
+                        echo number_format(abs($absentamount));
+                        $user_salary_absent = $user_salary_allownce - abs($absentamount);
                     } else {
                         echo 0;
                     }
@@ -608,13 +630,14 @@ if ($userType === 'admin') {
             </tr>
             <tr class="total-row">
                 <td>Total Deductions</td>
-                <td><?php echo number_format($user_salary_off_time) ?></td>
+                <?php $total_deduction = (abs($offtimeamount) + $absentamount) ?>
+                <td><?php echo number_format($total_deduction) ?></td>
             </tr>
         </tbody>
     </table>
 
     <div class="net-pay">
-        Net Pay: <?php echo number_format($user_salary_over_time - $user_salary_off_time) ?><br>
+        Net Pay: <?php echo number_format(abs($user_salary_allownce - $total_deduction)) ?><br>
     </div>
 
     <div class="signatures">
@@ -633,6 +656,16 @@ if ($userType === 'admin') {
     </div>
 </div>
 
+<script>
+    document.getElementById('exportForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const payslipContent = document.getElementById('salaryslipContent').outerHTML;
+        document.getElementById('htmlContent').value = payslipContent;
+
+        this.submit();
+    });
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
