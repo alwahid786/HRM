@@ -183,6 +183,74 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['changePassword'])) {
             box-shadow: 10px -5px 0 0 rgba(0, 0, 0, 0.3s);
             background: linear-gradient(to right, #35592d, #1e5d75) !important;
         }
+
+        .payslip-container {
+            width: 700px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #000;
+        }
+        .payslip-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .payslip-header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .company-info, .employee-info {
+            margin-bottom: 20px;
+        }
+        .info-table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .info-table td {
+            padding: 8px 5px;
+        }
+        .info-table td:first-child {
+            text-align: left;
+        }
+        .info-table td:last-child {
+            text-align: right;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid black;
+        }
+        th {
+            background-color: #f3f3f3;
+        }
+        .total-row td {
+            font-weight: bold;
+        }
+        .net-pay {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        .signature {
+            text-align: center;
+            width: 40%;
+        }
+        .footer-slip {
+            text-align: center;
+            margin-top: 50px;
+            font-style: italic;
+            font-size: 12px;
+        }
         
     </style>
 </head>
