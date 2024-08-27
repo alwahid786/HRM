@@ -90,7 +90,7 @@ if ($user_salary) {
         $end = new DateTime($enddate);
         $interval = $start->diff($end);
 
-        $perdaysalary = $user_salary / $interval->days;
+        $perdaysalary = $user_salary / ($interval->days + 1);
         $perhoursalary = $perdaysalary / 9;
         $perminsalary = $perhoursalary / 60;
     }
