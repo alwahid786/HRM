@@ -82,13 +82,13 @@ $pendingCount = $result->num_rows;
         <tbody>
             <?php while ($row = $result->fetch_assoc()): ?>
                 <tr>
-                    <td><?php echo htmlspecialchars($row['username']); ?></td>
-                    <td><?php echo htmlspecialchars($row['start_date']); ?></td>
-                    <td><?php echo htmlspecialchars($row['end_date']); ?></td>
-                    <td><?php echo htmlspecialchars($row['duration']); ?></td>
-                    <td><?php echo htmlspecialchars($row['leave_type']); ?></td>
-                    <td><?php echo htmlspecialchars($row['reason']); ?></td>
-                    <td><?php echo htmlspecialchars($row['status']); ?></td>
+                    <td><?php echo ($row['username']); ?></td>
+                    <td><?php echo ($row['start_date']); ?></td>
+                    <td><?php echo ($row['end_date']); ?></td>
+                    <td><?php echo ($row['duration']); ?></td>
+                    <td><?php echo ($row['leave_type']); ?></td>
+                    <td><?php echo ($row['reason']); ?></td>
+                    <td><?php echo ($row['status']); ?></td>
                     <td>
                         <form method="post" action="">
                             <input type="hidden" name="leave_id" value="<?php echo $row['id']; ?>">

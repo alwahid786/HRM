@@ -81,14 +81,14 @@ $result = $stmt->get_result();
                         }
                     ?>
                 <tr>
-                    <td><?php echo htmlspecialchars($row['id']); ?></td>
-                    <td><?php echo htmlspecialchars($row['username']); ?></td>
-                    <td><?php echo htmlspecialchars($row['login']); ?></td>
-                    <td><?php echo htmlspecialchars($row['email']); ?></td>
-                    <td><?php echo htmlspecialchars($row['user_type']); ?></td>
-                    <td><?php echo htmlspecialchars($row['hiring_date']); ?></td>
-                    <td><?php echo htmlspecialchars($row['created_at']); ?></td>
-                    <td><div class="<?php echo $statusClass; ?>"><?php echo htmlspecialchars($row['status']); ?></div></td>
+                    <td><?php echo ($row['id']); ?></td>
+                    <td><?php echo ($row['username']); ?></td>
+                    <td><?php echo ($row['login']); ?></td>
+                    <td><?php echo ($row['email']); ?></td>
+                    <td><?php echo ($row['user_type']); ?></td>
+                    <td><?php echo ($row['hiring_date']); ?></td>
+                    <td><?php echo ($row['created_at']); ?></td>
+                    <td><div class="<?php echo $statusClass; ?>"><?php echo ($row['status']); ?></div></td>
                     <td>
                         <?php if ($row['status'] == 'active'): ?>
                             <form method="post" action="">

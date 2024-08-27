@@ -121,14 +121,14 @@ if ($userType === 'admin') {
                     <div class="col-2">
                         <div>
                             <label class="form-label">Start Date</label>
-                            <input id="StartDate" class="form-control" type="date" name="startdate" value="<?php echo isset($_GET['startdate']) ? htmlspecialchars($_GET['startdate']) : ''; ?>" required>
+                            <input id="StartDate" class="form-control" type="date" name="startdate" value="<?php echo isset($_GET['startdate']) ? ($_GET['startdate']) : ''; ?>" required>
                         </div>
                     </div>
                     <div class="col-2">
                         <div class="d-flex" style="gap: 15px;">
                             <div>
                                 <label class="form-label">End Date</label>
-                                <input id="EndDate" class="form-control" type="date" name="enddate" value="<?php echo isset($_GET['enddate']) ? htmlspecialchars($_GET['enddate']) : ''; ?>" required>
+                                <input id="EndDate" class="form-control" type="date" name="enddate" value="<?php echo isset($_GET['enddate']) ? ($_GET['enddate']) : ''; ?>" required>
                             </div>
                             <div style="padding-top: 32px;">
                                 <button type="submit" class="btn btn-primary">Filter</button>
@@ -143,8 +143,8 @@ if ($userType === 'admin') {
                         <button type="submit" name="showAllAttendance" class="btn btn-primary">Show All</button>
                     </form>
                     <form method="POST" action="userattendanceexportpdf.php" style="margin-left: 15px;">
-                        <input type="hidden" name="startdate" value="<?php echo htmlspecialchars(isset($_GET['startdate']) ? $_GET['startdate'] : ''); ?>">
-                        <input type="hidden" name="enddate" value="<?php echo htmlspecialchars(isset($_GET['enddate']) ? $_GET['enddate'] : ''); ?>">
+                        <input type="hidden" name="startdate" value="<?php echo (isset($_GET['startdate']) ? $_GET['startdate'] : ''); ?>">
+                        <input type="hidden" name="enddate" value="<?php echo (isset($_GET['enddate']) ? $_GET['enddate'] : ''); ?>">
                         <button type="submit" name="exportPdf" class="btn btn-primary">Export to PDF</button>
                     </form>
                     <a href="userpayroll.php" class="btn btn-dark text-white ">
@@ -214,16 +214,16 @@ if ($userType === 'admin') {
                         }
 
                         echo "<tr>";
-                        echo "<td>" . htmlspecialchars($row['id']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['department']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['name']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['no']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['date_time']) . "</td>";
-                        echo "<td><div class='" . $statusClass . "'>" . htmlspecialchars($row['status']) . "</div></td>";
-                        echo "<td>" . htmlspecialchars($row['location_id']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['id_number']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['verify_code']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['card_no']) . "</td>";
+                        echo "<td>" . ($row['id']) . "</td>";
+                        echo "<td>" . ($row['department']) . "</td>";
+                        echo "<td>" . ($row['name']) . "</td>";
+                        echo "<td>" . ($row['no']) . "</td>";
+                        echo "<td>" . ($row['date_time']) . "</td>";
+                        echo "<td><div class='" . $statusClass . "'>" . ($row['status']) . "</div></td>";
+                        echo "<td>" . ($row['location_id']) . "</td>";
+                        echo "<td>" . ($row['id_number']) . "</td>";
+                        echo "<td>" . ($row['verify_code']) . "</td>";
+                        echo "<td>" . ($row['card_no']) . "</td>";
                         echo "<td>";
 
                         // Late Minutes (Red background)
