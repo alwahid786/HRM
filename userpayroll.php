@@ -197,11 +197,12 @@ if ($result_checkin->num_rows > 0) {
 $absents_checkin->close();
 
 $totalabsents = 0;
-if ($absentcheckoutData > $absentcheckinData) {
-    $totalabsents = $totalWorkingDaysofThisMonth - count($absentcheckoutData);
-    $totalabsents = $totalabsents - count($leavesData);
-} elseif ($absentcheckinData > $absentcheckoutData) {
+
+if (count($absentcheckinData) > count($absentcheckoutData)) {
     $totalabsents = $totalWorkingDaysofThisMonth - count($absentcheckinData);
+    $totalabsents = $totalabsents - count($leavesData);
+} elseif (count($absentcheckoutData) > count($absentcheckinData)) {
+    $totalabsents = $totalWorkingDaysofThisMonth - count($absentcheckoutData);
     $totalabsents = $totalabsents - count($leavesData);
 }
 
