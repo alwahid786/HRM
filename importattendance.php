@@ -51,18 +51,22 @@ if (isset($_POST['export']) && $_POST['export'] === 'true' && isset($_FILES['att
             if ($index === 0) continue; 
 
         
-            $department = htmlspecialchars($row[0]);
-            $name = htmlspecialchars($row[1]);
-            $no = htmlspecialchars($row[2]);
+            $department = ($row[0]);
+            $name = ($row[1]);
+            $no = ($row[2]);
 
-            $dateTime = htmlspecialchars($row[3]);
-            $dateTimeFormatted = date('Y-m-d H:i:s', strtotime($dateTime));
+            // $dateTime = ($row[3]);
+            // $dateTimeFormatted = date('Y-d-m H:i:s', strtotime($dateTime));
 
-            $status = htmlspecialchars($row[4]);
-            $locationId = htmlspecialchars($row[5]);
-            $idNumber = htmlspecialchars($row[6]);
-            $verifyCode = htmlspecialchars($row[7]);
-            $cardNo = htmlspecialchars($row[8]);
+            $dateString = ($row[3]);
+            $dateTime = DateTime::createFromFormat('d/m/Y H:i:s', $dateString);
+            $dateTimeFormatted = $dateTime->format('Y-m-d H:i:s');
+
+            $status = ($row[4]);
+            $locationId = ($row[5]);
+            $idNumber = ($row[6]);
+            $verifyCode = ($row[7]);
+            $cardNo = ($row[8]);
 
             // Bind the parameters
             $stmt->bind_param(

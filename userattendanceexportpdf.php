@@ -50,16 +50,16 @@ $html .= '<table border="1" width="100%" style="border-collapse: collapse;">
 
 while ($row = $result->fetch_assoc()) {
     $html .= '<tr>
-                <td>' . htmlspecialchars($row['id']) . '</td>
-                <td>' . htmlspecialchars($row['department']) . '</td>
-                <td>' . htmlspecialchars($row['name']) . '</td>
-                <td>' . htmlspecialchars($row['no']) . '</td>
-                <td>' . htmlspecialchars($row['date_time']) . '</td>
-                <td>' . htmlspecialchars($row['status']) . '</td>
-                <td>' . htmlspecialchars($row['location_id']) . '</td>
-                <td>' . htmlspecialchars($row['id_number']) . '</td>
-                <td>' . htmlspecialchars($row['verify_code']) . '</td>
-                <td>' . htmlspecialchars($row['card_no']) . '</td>
+                <td>' . ($row['id']) . '</td>
+                <td>' . ($row['department']) . '</td>
+                <td>' . ($row['name']) . '</td>
+                <td>' . ($row['no']) . '</td>
+                <td>' . ($row['date_time']) . '</td>
+                <td>' . ($row['status']) . '</td>
+                <td>' . ($row['location_id']) . '</td>
+                <td>' . ($row['id_number']) . '</td>
+                <td>' . ($row['verify_code']) . '</td>
+                <td>' . ($row['card_no']) . '</td>
               </tr>';
 }
 

@@ -44,16 +44,16 @@ $html .= '<table border="1" width="100%" style="border-collapse: collapse;">
 
 while ($row = $result->fetch_assoc()) {
     $html .= '<tr>
-                <td>' . htmlspecialchars($row['id']) . '</td>
-                <td>' . htmlspecialchars($row['username']) . '</td>
-                <td>' . htmlspecialchars($row['start_date']) . '</td>
-                <td>' . htmlspecialchars($row['end_date']) . '</td>
-                <td>' . htmlspecialchars($row['duration']) . '</td>
-                <td>' . htmlspecialchars($row['leave_type']) . '</td>
-                <td>' . htmlspecialchars($row['reason']) . '</td>
-                <td>' . htmlspecialchars($row['status']) . '</td>
-                <td>' . htmlspecialchars($row['action_by']) . '</td>
-                <td>' . htmlspecialchars($row['action_date']) . '</td>
+                <td>' . ($row['id']) . '</td>
+                <td>' . ($row['username']) . '</td>
+                <td>' . ($row['start_date']) . '</td>
+                <td>' . ($row['end_date']) . '</td>
+                <td>' . ($row['duration']) . '</td>
+                <td>' . ($row['leave_type']) . '</td>
+                <td>' . ($row['reason']) . '</td>
+                <td>' . ($row['status']) . '</td>
+                <td>' . ($row['action_by']) . '</td>
+                <td>' . ($row['action_date']) . '</td>
               </tr>';
 }
 

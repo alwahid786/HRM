@@ -106,19 +106,19 @@ $conn->close();
                 }
                 ?>
                 <tr>
-                    <td><?php echo htmlspecialchars($leave['start_date']); ?></td>
-                    <td><?php echo htmlspecialchars($leave['end_date']); ?></td>
-                    <td><?php echo htmlspecialchars($leave['duration']); ?></td>
-                    <td><?php echo htmlspecialchars($leave['leave_type']); ?></td>
-                    <td><?php echo htmlspecialchars($leave['reason']); ?></td>
+                    <td><?php echo ($leave['start_date']); ?></td>
+                    <td><?php echo ($leave['end_date']); ?></td>
+                    <td><?php echo ($leave['duration']); ?></td>
+                    <td><?php echo ($leave['leave_type']); ?></td>
+                    <td><?php echo ($leave['reason']); ?></td>
                     <td>
-                        <div class="<?php echo $statusClass; ?>"><?php echo htmlspecialchars($leave['status']); ?></div>
+                        <div class="<?php echo $statusClass; ?>"><?php echo ($leave['status']); ?></div>
                     </td>
                     <td>
-                        <?php echo isset($usernames[$leave['action_by']]) ? htmlspecialchars($usernames[$leave['action_by']]) : 'N/A'; ?>
+                        <?php echo isset($usernames[$leave['action_by']]) ? ($usernames[$leave['action_by']]) : 'N/A'; ?>
                     </td>
                     <td>
-                        <?php echo htmlspecialchars($leave['action_date']) ? date('Y-m-d H:i:s', strtotime($leave['action_date'])) : 'N/A'; ?>
+                        <?php echo ($leave['action_date']) ? date('Y-m-d H:i:s', strtotime($leave['action_date'])) : 'N/A'; ?>
                     </td>
                     <td>
                         <?php if ($leave['status'] == 'Requested'): ?>

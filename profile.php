@@ -43,35 +43,35 @@ if ($userType === 'admin') {
     <table class="table table-bordered">
         <tr>
             <th>ID</th>   
-            <td><?php echo htmlspecialchars($id); ?></td>
+            <td><?php echo ($id); ?></td>
         </tr>
         <tr>
             <th>User</th>
-            <td><?php echo htmlspecialchars($username); ?></td>
+            <td><?php echo ($username); ?></td>
         </tr>
         <tr>
             <th>Login</th>
-            <td><?php echo htmlspecialchars($login); ?></td>
+            <td><?php echo ($login); ?></td>
         </tr>
         <tr>
             <th>Email</th>
-            <td><?php echo htmlspecialchars($email); ?></td>
+            <td><?php echo ($email); ?></td>
         </tr>
         <tr>
             <th>User Type</th>
-            <td><?php echo htmlspecialchars($userType); ?></td>
+            <td><?php echo ($userType); ?></td>
         </tr>
         <tr>
             <th>Hiring Date</th>
-            <td><?php echo htmlspecialchars($hiringDate); ?></td>
+            <td><?php echo ($hiringDate); ?></td>
         </tr>
         <tr>
             <th>Created At</th>
-            <td><?php echo htmlspecialchars($createdAt); ?></td>
+            <td><?php echo ($createdAt); ?></td>
         </tr>
         <tr>
             <th>Status</th>
-            <td><?php echo htmlspecialchars($status); ?></td>
+            <td><?php echo ($status); ?></td>
         </tr>
     </table>
 </section>

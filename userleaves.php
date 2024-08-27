@@ -123,7 +123,7 @@ $conn->close();
 <?php include_once 'partials/users/navbar.php'; ?>
 
 <?php if (isset($error)): ?>
-    <div class="alert alert-danger mt-3"><?php echo htmlspecialchars($error); ?></div>
+    <div class="alert alert-danger mt-3"><?php echo ($error); ?></div>
 <?php endif; ?>
 
 <section class="container" style="padding: 60px 0 40px 0;">
@@ -133,14 +133,14 @@ $conn->close();
         </div>
         <div>
             <label>Remaining Leaves</label>
-            <input  type="text" class="form-control" id="remainingLeaves" name="remainingLeaves" value="<?php echo htmlspecialchars($remainingLeaves); ?>" readonly>
+            <input  type="text" class="form-control" id="remainingLeaves" name="remainingLeaves" value="<?php echo ($remainingLeaves); ?>" readonly>
         </div>
     </div>
     <form method="post" action="userleaves.php" id="leaveForm">
         <div class="row mb-2">
             <div class="col-md-6">
                 <label for="username" class="form-label">User Name</label>
-                <input type="text" class="form-control" id="username" name="username" value="<?php echo htmlspecialchars($username); ?>" readonly>
+                <input type="text" class="form-control" id="username" name="username" value="<?php echo ($username); ?>" readonly>
             </div>
             <div class="col-md-6">
                 <label for="leaveType" class="form-label">Leave Type</label>

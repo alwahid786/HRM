@@ -2,8 +2,8 @@
 session_start();
 require 'config.php';
 
-
-if (!isset($_SESSION['user_id'])) {
+// Check if user is logged in and is an admin
+if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 'admin') {
     header("Location: login.php");
     exit();
 }
@@ -17,6 +17,64 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         $stmt = $conn->prepare("UPDATE users SET status = ? WHERE id = ?");
         $stmt->bind_param("si", $status, $userIdToChange);
+
+        if ($stmt->execute()) {
+            header("Location: adminuserlist.php");
+            exit();
+        } else {
+            echo "Error: " . $stmt->error;
+        }
+        $stmt->close();
+    } elseif (isset($_POST['update_user_id'])) {
+        // Update user details from modal form
+        $userIdToUpdate = $_POST['update_user_id'];
+        $leaveLimit = $_POST['leave_limit'];
+        $leaveStartDate = $_POST['leave_start_date'];
+        $leaveEndDate = $_POST['leave_end_date'];
+        $salary = $_POST['salary'];
+        $email = $_POST['email'];
+        $login = $_POST['login'];
+
+        // Check if all fields are filled
+        if (empty($userIdToUpdate) || empty($leaveLimit) || empty($leaveStartDate) || empty($leaveEndDate) || empty($salary) || empty($email) || empty($login)) {
+            echo "Error: All fields are required.";
+            exit();
+        }
+
+        // Validate leave limit (integer)
+        if (!filter_var($leaveLimit, FILTER_VALIDATE_INT)) {
+            echo "Error: Invalid leave limit.";
+            exit();
+        }
+
+        // Validate salary (integer)
+        if (!filter_var($salary, FILTER_VALIDATE_FLOAT)) {
+            echo "Error: Invalid salary.";
+            exit();
+        }
+
+        // Validate email
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            echo "Error: Invalid email format.";
+            exit();
+        }
+
+        // Validate date formats
+        $startDate = DateTime::createFromFormat('Y-m-d', $leaveStartDate);
+        $endDate = DateTime::createFromFormat('Y-m-d', $leaveEndDate);
+
+        if (!$startDate || !$endDate) {
+            echo "Error: Invalid date format.";
+            exit();
+        }
+
+        if ($startDate > $endDate) {
+            echo "Error: Start date cannot be later than end date.";
+            exit();
+        }
+
+        $stmt = $conn->prepare("UPDATE users SET leave_limit = ?, leave_start_date = ?, leave_end_date = ?, salary = ?, email = ?, login = ? WHERE id = ?");
+        $stmt->bind_param("issdssi", $leaveLimit, $leaveStartDate, $leaveEndDate, $salary, $email, $login, $userIdToUpdate);
 
         if ($stmt->execute()) {
             header("Location: adminuserlist.php");
@@ -68,36 +126,39 @@ $result = $stmt->get_result();
                     }
                     ?>
                     <tr>
-                        <td><?php echo htmlspecialchars($row['user_no']); ?></td>
-                        <td><?php echo htmlspecialchars($row['username']); ?></td>
-                        <td><?php echo htmlspecialchars($row['login']); ?></td>
-                        <td><?php echo htmlspecialchars($row['email']); ?></td>
-                        <td><?php echo htmlspecialchars($row['user_type']); ?></td>
-                        <td><?php echo htmlspecialchars($row['hiring_date']); ?></td>
-                        <td><?php echo htmlspecialchars($row['role']); ?></td>
-                        <td><?php echo htmlspecialchars($row['salary']); ?></td>
-                        <td><?php echo htmlspecialchars($row['created_at']); ?></td>
+                        <td><?php echo ($row['user_no']); ?></td>
+                        <td><?php echo ($row['username']); ?></td>
+                        <td><?php echo ($row['login']); ?></td>
+                        <td><?php echo ($row['email']); ?></td>
+                        <td><?php echo ($row['user_type']); ?></td>
+                        <td><?php echo ($row['hiring_date']); ?></td>
+                        <td><?php echo ($row['role']); ?></td>
+                        <td><?php echo ($row['salary']); ?></td>
+                        <td><?php echo ($row['created_at']); ?></td>
                         <td>
-                            <div class="<?php echo $statusClass; ?>"><?php echo htmlspecialchars($row['status']); ?></div>
+                            <div class="<?php echo $statusClass; ?>"><?php echo ($row['status']); ?></div>
                         </td>
                         <td class="d-flex justify-content-center align-items-center">
                             <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#leavelimitModal"
-                                data-userid="<?php echo htmlspecialchars($row['id']); ?>"
-                                data-leavelimit="<?php echo htmlspecialchars($row['leave_limit']); ?>"
-                                data-leavestartdate="<?php echo htmlspecialchars($row['leave_start_date']); ?>"
-                                data-leaveenddate="<?php echo htmlspecialchars($row['leave_end_date']); ?>">
+                                data-userid="<?php echo ($row['id']); ?>"
+                                data-leavelimit="<?php echo ($row['leave_limit']); ?>"
+                                data-leavestartdate="<?php echo ($row['leave_start_date']); ?>"
+                                data-leaveenddate="<?php echo ($row['leave_end_date']); ?>"
+                                data-salary="<?php echo ($row['salary']); ?>"
+                                data-email="<?php echo  ($row['email']); ?>"
+                                data-login="<?php echo  ($row['login']); ?>">
                                 <img src="images/icons/edit.png" width="24px" height="24px">
                             </button>
                         </td>
                         <td>
                             <?php if ($row['status'] == 'active'): ?>
                                 <form method="post" action="">
-                                    <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($row['id']); ?>">
+                                    <input type="hidden" name="user_id" value="<?php echo ($row['id']); ?>">
                                     <button type="submit" name="action" value="block" class="btn btn-warning btn-sm">Block</button>
                                 </form>
                             <?php else: ?>
                                 <form method="post" action="">
-                                    <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($row['id']); ?>">
+                                    <input type="hidden" name="user_id" value="<?php echo ($row['id']); ?>">
                                     <button type="submit" name="action" value="unblock" class="btn btn-success btn-sm">Unblock</button>
                                 </form>
                             <?php endif; ?>
@@ -109,13 +170,6 @@ $result = $stmt->get_result();
     </div>
 </section>
 
-<?php include_once 'partials/admin/footer.php'; ?>
-
-<?php
-$stmt->close();
-$conn->close();
-?>
-
 <!-- Leave Limit Modal -->
 <div class="modal fade" id="leavelimitModal" tabindex="-1" aria-labelledby="leavelimitModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -125,9 +179,9 @@ $conn->close();
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="post" action="leave_limit.php">
+                <form method="post" action="adminuserlist.php">
+                    <input type="hidden" name="update_user_id" id="modalUserId">
                     <div class="mb-3">
-                        <input type="hidden" name="user_id" id="modalUserId" value="">
                         <label for="leave_limit" class="form-label">Leave Limit</label>
                         <input type="number" name="leave_limit" id="modalLeaveLimit" class="form-control" min="0" required>
                     </div>
@@ -140,38 +194,53 @@ $conn->close();
                         <input type="date" name="leave_end_date" id="modalLeaveEndDate" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label for="leave_end_date" class="form-label">Salary</label>
-                        <input type="number" name="salary" id="modalsalary" class="form-control" required>
+                        <label for="salary" class="form-label">Salary</label>
+                        <input type="number" step="0.01" name="salary" id="modalSalary" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label for="leave_end_date" class="form-label">Email</label>
-                        <input type="email" name="email" id="modalemail" class="form-control" required>
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" name="email" id="modalEmail" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label for="leave_end_date" class="form-label">login</label>
-                        <input type="text" name="login" id="modallogin" class="form-control" required>
+                        <label for="login" class="form-label">Login</label>
+                        <input type="text" name="login" id="modalLogin" class="form-control" required>
                     </div>
-                    <button type="submit" class="btn btn-info btn-sm">Update Limit</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        $('#leavelimitModal').on('show.bs.modal', function(event) {
-            var button = $(event.relatedTarget);
-            var userId = button.data('userid');
-            var leaveLimit = button.data('leavelimit');
-            var leaveStartDate = button.data('leavestartdate');
-            var leaveEndDate = button.data('leaveenddate');
+        document.querySelectorAll('button[data-bs-toggle="modal"]').forEach(button => {
+            button.addEventListener('click', function() {
+                const userId = button.getAttribute('data-userid');
+                const leaveLimit = button.getAttribute('data-leavelimit');
+                const leaveStartDate = button.getAttribute('data-leavestartdate');
+                const leaveEndDate = button.getAttribute('data-leaveenddate');
+                const salary = button.getAttribute('data-salary');
+                const email = button.getAttribute('data-email');
+                const login = button.getAttribute('data-login');
 
-            var modal = $(this);
-            modal.find('#modalUserId').val(userId);
-            modal.find('#modalLeaveLimit').val(leaveLimit);
-            modal.find('#modalLeaveStartDate').val(leaveStartDate);
-            modal.find('#modalLeaveEndDate').val(leaveEndDate);
+                document.getElementById('modalUserId').value = userId;
+                document.getElementById('modalLeaveLimit').value = leaveLimit;
+                document.getElementById('modalLeaveStartDate').value = leaveStartDate;
+                document.getElementById('modalLeaveEndDate').value = leaveEndDate;
+                document.getElementById('modalSalary').value = salary;
+                document.getElementById('modalEmail').value = email;
+                document.getElementById('modalLogin').value = login;
+            });
         });
     });
 </script>
+
+
+<?php include_once 'partials/admin/footer.php'; ?>
+
+<?php
+$stmt->close();
+$conn->close();
+?>

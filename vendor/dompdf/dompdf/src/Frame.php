@@ -1166,7 +1166,7 @@ class Frame
         $str .= "Class: " . get_class($this) . "<br/>";
 
         if ($this->is_text_node()) {
-            $tmp = htmlspecialchars($this->_node->nodeValue);
+            $tmp = ($this->_node->nodeValue);
             $str .= "<pre>'" . mb_substr($tmp, 0, 70) .
                 (mb_strlen($tmp) > 70 ? "..." : "") . "'</pre>";
         } elseif ($css_class = $this->_node->getAttribute("class")) {
@@ -1210,7 +1210,7 @@ class Frame
                 foreach ($line->get_frames() as $frame) {
                     if ($frame instanceof FrameDecorator\Text) {
                         $str .= "\ntext: ";
-                        $str .= "'" . htmlspecialchars($frame->get_text()) . "'";
+                        $str .= "'" . ($frame->get_text()) . "'";
                     } else {
                         $str .= "\nBlock: " . $frame->get_node()->nodeName . " (" . spl_object_hash($frame->get_node()) . ")";
                     }
