@@ -42,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['html_content'])) {
                 width: 100%;
                 border-collapse: collapse;
                 margin-bottom: 20px;
+                font-size: 12px;
             }
             th, td {
                 padding: 10px;
