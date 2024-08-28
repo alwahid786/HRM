@@ -185,6 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['changePassword'])) {
         }
 
         .payslip-container {
+            background-color: #fff;
             width: 700px;
             margin: 20px auto;
             padding: 20px;
@@ -237,19 +238,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['changePassword'])) {
             margin: 20px 0;
         }
         .signatures {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 30px;
+            display: flex !important;
+            justify-content: space-between !important;
+            margin-top: 30px !important;
         }
         .signature {
-            text-align: center;
-            width: 40%;
+            text-align: center !important;
+            width: 40% !important;
         }
         .footer-slip {
             text-align: center;
             margin-top: 50px;
             font-style: italic;
             font-size: 12px;
+        }
+
+        .width-25{
+             width: 25%;
+        }
+        
+        .width-65{
+            width: 65%;
+        }
+
+        .boldtext{
+            font-weight: 700;
         }
         
     </style>

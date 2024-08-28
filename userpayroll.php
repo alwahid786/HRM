@@ -372,9 +372,9 @@ if ($userType === 'admin') {
                             </div>
                         </div>
                         <div class="col-4">
-                        <div style="padding-top: 32px;">
-                        <button type="submit" class="btn btn-primary">Filter</button>
-                    </div>
+                            <div style="padding-top: 32px;">
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -430,7 +430,7 @@ if ($userType === 'admin') {
                             $minutes = $interval->i;
 
                             $totalWorkingHoursForSession = $hours . ' hours ' . $minutes . ' minutes';
-                            $totalWorkingMinForSession = ($hours * 60 )+ $minutes;
+                            $totalWorkingMinForSession = ($hours * 60) + $minutes;
                             $checkInTime = null;
                         } else {
                             $totalWorkingHoursForSession = 0;
@@ -482,7 +482,7 @@ if ($userType === 'admin') {
                                 $remainingMinutes = $shiftDuration - $totalWorkingMinForSession;
                                 $hours = floor($remainingMinutes / 60);
                                 $minutes = $remainingMinutes % 60;
-                                $earlycheckoutsData ++;
+                                $earlycheckoutsData++;
                                 echo "<span style='font-weight: 500; color: #e8a215;'>CheckOut, " . $hours . " hour(s) " . $minutes . " minute(s) before shift</span>";
                             }
                         } else {
@@ -491,7 +491,7 @@ if ($userType === 'admin') {
                         echo "</td>";
                         if ($status == 'C/Out') {
                             if ($totalWorkingHoursForSession < 9) {
-                                if(((9 * 60) - $totalWorkingMinForSession) > 0){
+                                if (((9 * 60) - $totalWorkingMinForSession) > 0) {
                                     $LatecheckInsAndEarlyCheckOuts += ((9 * 60) - $totalWorkingMinForSession);
                                 }
                                 echo "<td style='background-color: #ede909 ;' >" . $totalWorkingHoursForSession . "</td>";
@@ -515,13 +515,6 @@ if ($userType === 'admin') {
     </div>
 </section>
 
-<div>
-    <form id="exportForm" action="export_salaryslip.php" method="post">
-        <button type="submit">Export Salary Slip</button>
-        <input type="hidden" name="html_content" id="htmlContent" />
-    </form>
-</div>
-
 <div class="payslip-container" id="salaryslipContent">
     <div class="payslip-header">
         <h1>Payslip</h1>
@@ -532,9 +525,9 @@ if ($userType === 'admin') {
     <div class="company-info">
         <table class="info-table">
             <tr>
-                <td>Employee Name</td>
-                <td><?php echo $user_name; ?></td>
-                <td>From Date</td>
+                <td class="width-25 boldtext">Employee Name</td>
+                <td class="width-25"><?php echo $user_name; ?></td>
+                <td class="width-25 boldtext">From Date</td>
                 <td>
                     <?php
                     $date = new DateTime($startdate ?? 'now');
@@ -543,9 +536,9 @@ if ($userType === 'admin') {
                 </td>
             </tr>
             <tr>
-                <td>Designation</td>
+                <td class="boldtext">Designation</td>
                 <td><?php echo $user_role; ?></td>
-                <td>To Date</td>
+                <td class="boldtext">To Date</td>
                 <td>
                     <?php
                     $date = new DateTime($enddate ?? 'now');
@@ -554,16 +547,17 @@ if ($userType === 'admin') {
                 </td>
             </tr>
             <tr>
-                <td>Absents</td>
+                <td class="boldtext">Absents</td>
                 <td><?php echo ($totalabsents); ?> </td>
-                <td>Leaves</td>
+                <td class="boldtext">Leaves</td>
                 <td><?php echo count($leavesData); ?> </td>
             </tr>
             <tr>
-                <td>Late Check Ins</td>
+                <td class="boldtext">Late Check Ins</td>
                 <td><?php echo count($latecheckinsData); ?> </td>
-                <td>Early Check Outs</td>
-                <!-- <td><?php //echo count($earlycheckoutsData); ?> </td> -->
+                <td class="boldtext">Early Check Outs</td>
+                <!-- <td><?php //echo count($earlycheckoutsData); 
+                            ?> </td> -->
                 <td><?php echo $earlycheckoutsData; ?> </td>
             </tr>
             <!-- <tr>
@@ -571,17 +565,17 @@ if ($userType === 'admin') {
                 <td colspan="2"><?php echo $workingTime ? $workingTime : 0; ?></td>
             </tr> -->
             <tr>
-                <td colspan="2">Late CheckIns and Early CheckOuts Total Time</td>
+                <td colspan="2" class="boldtext">Late CheckIns and Early CheckOuts Total Time</td>
                 <td colspan="2">
-                <?php 
-                if($LatecheckInsAndEarlyCheckOuts > 0){
-                    $LatecheckInsAndEarlyCheckOuts_hours = floor($LatecheckInsAndEarlyCheckOuts / 60);
-                    $LatecheckInsAndEarlyCheckOuts_minutes = $LatecheckInsAndEarlyCheckOuts % 60;
-                    echo "<span style='font-weight: 500; color: black;'>" . $LatecheckInsAndEarlyCheckOuts_hours . " hour(s) " . $LatecheckInsAndEarlyCheckOuts_minutes . " minute(s)</span>";
-                }else{
-                    echo 0;
-                }
-                ?></td>
+                    <?php
+                    if ($LatecheckInsAndEarlyCheckOuts > 0) {
+                        $LatecheckInsAndEarlyCheckOuts_hours = floor($LatecheckInsAndEarlyCheckOuts / 60);
+                        $LatecheckInsAndEarlyCheckOuts_minutes = $LatecheckInsAndEarlyCheckOuts % 60;
+                        echo "<span style='font-weight: 500; color: black;'>" . $LatecheckInsAndEarlyCheckOuts_hours . " hour(s) " . $LatecheckInsAndEarlyCheckOuts_minutes . " minute(s)</span>";
+                    } else {
+                        echo 0;
+                    }
+                    ?></td>
             </tr>
         </table>
     </div>
@@ -594,11 +588,11 @@ if ($userType === 'admin') {
         </thead>
         <tbody>
             <tr>
-                <th>Basic Salary</th>
+                <th class="width-65">Basic Salary</th>
                 <th><?php echo $user_salary ?></th>
             </tr>
             <tr>
-                <td>Overtime</td>
+                <td class="width-65">Overtime</td>
                 <td><?php
                     if ($over_time > 0) {
                         echo $over_time . ' mins';
@@ -608,7 +602,7 @@ if ($userType === 'admin') {
                     ?></td>
             </tr>
             <tr>
-                <td>Overtime Amount</td>
+                <td class="width-65">Overtime Amount</td>
                 <td><?php
                     $user_salary_allownce = 0;
                     if ($over_time > 0) {
@@ -636,7 +630,7 @@ if ($userType === 'admin') {
         </thead>
         <tbody>
             <tr>
-                <td>Late Checkin + Early Checkout Min</td>
+                <td class="width-65">Late Checkin + Early Checkout Min</td>
                 <td><?php
                     if ($LatecheckInsAndEarlyCheckOuts > 0) {
                         echo   abs($LatecheckInsAndEarlyCheckOuts) . ' mins';
@@ -645,7 +639,7 @@ if ($userType === 'admin') {
                     } ?></td>
             </tr>
             <tr>
-                <td>Late Checkin + Early Checkout Fine</td>
+                <td class="width-65">Late Checkin + Early Checkout Fine</td>
                 <td><?php
                     $offtimeamount = 0;
                     if ($LatecheckInsAndEarlyCheckOuts > 0) {
@@ -657,7 +651,7 @@ if ($userType === 'admin') {
                     ?></td>
             </tr>
             <tr>
-                <td>Absent Deduction</td>
+                <td class="width-65">Absent Deduction</td>
                 <td><?php
                     $user_salary_absent = 0;
                     $absentamount = 0;
@@ -676,12 +670,12 @@ if ($userType === 'admin') {
                 <td><?php echo number_format($total_deduction) ?></td>
             </tr>
             <?php $compensation = $compensation ?  $compensation : 0; ?>
-            <?php if($compensation) { ?> 
-            <tr class="total-row">
-                <td>Compensation</td>
-                <td><?php echo number_format($compensation) ?></td>
-            </tr>
-            <?php }?>
+            <?php if ($compensation) { ?>
+                <tr class="total-row">
+                    <td>Compensation</td>
+                    <td><?php echo number_format($compensation) ?></td>
+                </tr>
+            <?php } ?>
         </tbody>
     </table>
 
@@ -689,20 +683,25 @@ if ($userType === 'admin') {
         Net Pay: <?php echo number_format(abs(($user_salary_allownce + $compensation) - $total_deduction)) ?><br>
     </div>
 
-    <div class="signatures row">
-        <div class="signature">
-            ____________________________<br>
-            Employer Signature
-        </div>
-        <div class="signature">
-            ____________________________<br>
-            Employee Signature
-        </div>
+    <div style="align-content: center; margin-top:25px;">
+        <tr>
+            <td> &nbsp; &nbsp; &nbsp;Employer Sign:</td>
+            <td>---------------------------</td>
+            <td>&nbsp; &nbsp; &nbsp; Employee Sign:</td>
+            <td>---------------------------</td>
+        </tr>
     </div>
 
     <div class="footer-slip">
         This is a system generated payslip
     </div>
+</div>
+
+<div class="d-flex justify-content-center">
+    <form id="exportForm" action="export_salaryslip.php" method="post">
+        <button class="btn btn-primary" type="submit">Export Salary Slip</button>
+        <input type="hidden" name="html_content" id="htmlContent" />
+    </form>
 </div>
 
 <script>
@@ -715,6 +714,7 @@ if ($userType === 'admin') {
         this.submit();
     });
 </script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
