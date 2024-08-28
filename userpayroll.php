@@ -38,7 +38,9 @@ if (!empty($enddate)) {
     $enddateQuery = date('Y-m-d', strtotime($enddate));
 }
 $user_no = isset($_GET['user_no']) ? $_GET['user_no'] : null;
+$over_time = isset($_GET['over_time']) ? $_GET['over_time'] : null;
 $totalWorkingDaysofThisMonth = getWorkingDays($startdate, $enddate);
+$compensation = isset($_GET['compensation']) ? $_GET['compensation'] : null;
 
 ///////////////////////user information/////////////////////////////////
 if (isset($user_no)) {
@@ -93,6 +95,9 @@ if ($user_salary) {
         $perdaysalary = $user_salary / ($interval->days + 1);
         $perhoursalary = $perdaysalary / 9;
         $perminsalary = $perhoursalary / 60;
+        $perdaysalary = number_format($perdaysalary, 2);
+        $perhoursalary = number_format($perhoursalary, 2);
+        $perminsalary = number_format($perminsalary, 2);
     }
 }
 //////////////////////////////////////////////////////////////////////
@@ -118,7 +123,7 @@ $stmt->close();
 //////////////////late checkins check//////////////////////////////////////////
 $latecheckinsData = [];
 if ($startdateQuery && $enddateQuery && $user_no) {
-    $time_checkin = '09:30:59';
+    $time_checkin = '09:30:00';
     $status_checkin = 'C/In';
     $latecheckins = $conn->prepare("SELECT * FROM attendance WHERE DATE(date_time) BETWEEN ? AND ? AND TIME(date_time) > ? AND status = ? AND no = ?");
     $latecheckins->bind_param("sssss", $startdateQuery, $enddateQuery, $time_checkin, $status_checkin, $user_no);
@@ -137,25 +142,26 @@ if ($result_checkin->num_rows > 0) {
 $latecheckins->close();
 ///////////////////////////////////////////////////////////////////////////////
 ////////////////////////////early checkouts check//////////////////////////////
-$earlycheckoutsData = [];
-if ($startdateQuery && $enddateQuery && $user_no) {
-    $time_checkout = '18:00:59';
-    $status_checkout = 'C/Out';
-    $earlycheckout = $conn->prepare("SELECT * FROM attendance WHERE DATE(date_time) BETWEEN ? AND ? AND TIME(date_time) < ? AND status = ? AND no = ? ");
-    $earlycheckout->bind_param("sssss", $startdateQuery, $enddateQuery, $time_checkout, $status_checkout, $user_no);
-} else {
-    $earlycheckout = $conn->prepare("SELECT * FROM attendance");
-}
+$earlycheckoutsData = 0;
+// $earlycheckoutsData = [];
+// if ($startdateQuery && $enddateQuery && $user_no) {
+//     $time_checkout = '18:00:00';
+//     $status_checkout = 'C/Out';
+//     $earlycheckout = $conn->prepare("SELECT * FROM attendance WHERE DATE(date_time) BETWEEN ? AND ? AND TIME(date_time) < ? AND status = ? AND no = ? ");
+//     $earlycheckout->bind_param("sssss", $startdateQuery, $enddateQuery, $time_checkout, $status_checkout, $user_no);
+// } else {
+//     $earlycheckout = $conn->prepare("SELECT * FROM attendance");
+// }
 
-$earlycheckout->execute();
-$result_checkout = $earlycheckout->get_result();
+// $earlycheckout->execute();
+// $result_checkout = $earlycheckout->get_result();
 
-if ($result_checkout->num_rows > 0) {
-    while ($row = $result_checkout->fetch_assoc()) {
-        $earlycheckoutsData[] = $row;
-    }
-}
-$earlycheckout->close();
+// if ($result_checkout->num_rows > 0) {
+//     while ($row = $result_checkout->fetch_assoc()) {
+//         $earlycheckoutsData[] = $row;
+//     }
+// }
+// $earlycheckout->close();
 ///////////////////////////////////////////////////////////////////////////////
 ////////////////////////////absents leaves check//////////////////////////////
 $absentcheckoutData = [];
@@ -319,43 +325,57 @@ if ($userType === 'admin') {
 
                 <!-- Filter form -->
                 <form id="attendanceForm" method="GET" action="userpayroll.php" style="display: flex; gap: 10px; justify-content: end;">
-                    <div class="col-2">
-                        <div>
-                            <label class="form-label">Start Date</label>
-                            <input id="StartDate" class="form-control" type="date" name="startdate" value="<?php echo ($startdate); ?>" required>
-                        </div>
-                    </div>
-                    <div class="col-2">
-                        <div>
-                            <label class="form-label">End Date</label>
-                            <input id="EndDate" class="form-control" type="date" name="enddate" value="<?php echo ($enddate); ?>" required>
-                        </div>
-                    </div>
-                    <div class="col-2">
-                        <div class="d-flex" style="gap: 15px;">
+                    <div class="col-12 row">
+                        <div class="col-4">
                             <div>
-                                <label class="form-label">Users</label>
-                                <select id="user_no" class="form-control" name="user_no" required>
-                                    <option value="">Select a User</option>
-                                    <?php
-                                    if ($usersData->num_rows > 0) {
-                                        while ($user = $usersData->fetch_assoc()) {
-                                            echo '<option value="' . ($user['user_no']) . '" ' .
-                                                (($user_no == $user['user_no']) ? 'selected' : '') . '>' .
-                                                $user['username'] . '</option>';
-                                        }
-                                    } else {
-                                        echo '<option value="">No users found</option>';
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-
-                            <div style="padding-top: 32px;">
-                                <button type="submit" class="btn btn-primary">Filter</button>
+                                <label class="form-label">Start Date</label>
+                                <input id="StartDate" class="form-control" type="date" name="startdate" value="<?php echo ($startdate); ?>" required>
                             </div>
                         </div>
-                        <br>
+                        <div class="col-4">
+                            <div>
+                                <label class="form-label">End Date</label>
+                                <input id="EndDate" class="form-control" type="date" name="enddate" value="<?php echo ($enddate); ?>" required>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div>
+                                <div>
+                                    <label class="form-label">Users</label>
+                                    <select id="user_no" class="form-control" name="user_no" required>
+                                        <option value="">Select a User</option>
+                                        <?php
+                                        if ($usersData->num_rows > 0) {
+                                            while ($user = $usersData->fetch_assoc()) {
+                                                echo '<option value="' . ($user['user_no']) . '" ' .
+                                                    (($user_no == $user['user_no']) ? 'selected' : '') . '>' .
+                                                    $user['username'] . '</option>';
+                                            }
+                                        } else {
+                                            echo '<option value="">No users found</option>';
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div>
+                                <label class="form-label">OverTime Mins(If Any)</label>
+                                <input class="form-control" type="Number" name="over_time" value="<?php echo ($over_time); ?>">
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div>
+                                <label class="form-label">Compansation(If Any)</label>
+                                <input class="form-control" type="Number" name="compensation" value="<?php echo ($compensation); ?>">
+                            </div>
+                        </div>
+                        <div class="col-4">
+                        <div style="padding-top: 32px;">
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                    </div>
+                        </div>
                     </div>
                 </form>
 
@@ -382,6 +402,7 @@ if ($userType === 'admin') {
             <tbody>
                 <?php
                 $userShifts = [];
+                $LatecheckInsAndEarlyCheckOuts = 0;
 
                 if (!empty($attendanceData)) {
                     foreach ($attendanceData as $row) {
@@ -409,6 +430,7 @@ if ($userType === 'admin') {
                             $minutes = $interval->i;
 
                             $totalWorkingHoursForSession = $hours . ' hours ' . $minutes . ' minutes';
+                            $totalWorkingMinForSession = ($hours * 60 )+ $minutes;
                             $checkInTime = null;
                         } else {
                             $totalWorkingHoursForSession = 0;
@@ -443,21 +465,25 @@ if ($userType === 'admin') {
                             if ($dateTime > $LateTime) {
                                 $interval = $compareTime->diff($dateTime);
                                 $lateMinutes = $interval->h * 60 + $interval->i;
+                                $LatecheckInsAndEarlyCheckOuts += $lateMinutes;
                                 echo "<span style='font-weight: 500; color: red;'>" . $lateMinutes . " minutes late</span>";
                             } else {
                                 echo 'On time';
                             }
                         } elseif ($row['status'] == 'C/Out') {
                             $clockOutTime = new DateTime($row['date_time']);
-                            $sixPM = new DateTime($clockOutTime->format('Y-m-d') . ' 18:00:00');
-                            if ($clockOutTime > $sixPM) {
-                                $interval = $sixPM->diff($clockOutTime);
-                                $additionalMinutes = $interval->h * 60 + $interval->i;
-                                echo "<span style='font-weight: 500; color: green;'>CheckOut, " . $additionalMinutes . " minutes after 6:00 PM</span>";
-                            } elseif ($clockOutTime < $sixPM) {
-                                $interval = $sixPM->diff($clockOutTime);
-                                $additionalMinutes = $interval->h * 60 + $interval->i;
-                                echo "<span style='font-weight: 500; color: #e8a215;'>CheckOut, " . $additionalMinutes . " minutes before 6:00 PM</span>";
+                            $shiftDuration = 9 * 60;
+                            if ($totalWorkingMinForSession > $shiftDuration) {
+                                $additionalMinutes = $totalWorkingMinForSession - $shiftDuration;
+                                $hours = floor($additionalMinutes / 60);
+                                $minutes = $additionalMinutes % 60;
+                                echo "<span style='font-weight: 500; color: green;'>CheckOut, " . $hours . " hour(s) " . $minutes . " minute(s) after shift</span>";
+                            } elseif ($totalWorkingMinForSession < $shiftDuration) {
+                                $remainingMinutes = $shiftDuration - $totalWorkingMinForSession;
+                                $hours = floor($remainingMinutes / 60);
+                                $minutes = $remainingMinutes % 60;
+                                $earlycheckoutsData ++;
+                                echo "<span style='font-weight: 500; color: #e8a215;'>CheckOut, " . $hours . " hour(s) " . $minutes . " minute(s) before shift</span>";
                             }
                         } else {
                             echo '';
@@ -465,6 +491,9 @@ if ($userType === 'admin') {
                         echo "</td>";
                         if ($status == 'C/Out') {
                             if ($totalWorkingHoursForSession < 9) {
+                                if(((9 * 60) - $totalWorkingMinForSession) > 0){
+                                    $LatecheckInsAndEarlyCheckOuts += ((9 * 60) - $totalWorkingMinForSession);
+                                }
                                 echo "<td style='background-color: #ede909 ;' >" . $totalWorkingHoursForSession . "</td>";
                             } else {
                                 echo "<td>" . $totalWorkingHoursForSession . "</td>";
@@ -534,11 +563,25 @@ if ($userType === 'admin') {
                 <td>Late Check Ins</td>
                 <td><?php echo count($latecheckinsData); ?> </td>
                 <td>Early Check Outs</td>
-                <td><?php echo count($earlycheckoutsData); ?> </td>
+                <!-- <td><?php //echo count($earlycheckoutsData); ?> </td> -->
+                <td><?php echo $earlycheckoutsData; ?> </td>
             </tr>
-            <tr>
+            <!-- <tr>
                 <td colspan="2">Working Hours/min</td>
                 <td colspan="2"><?php echo $workingTime ? $workingTime : 0; ?></td>
+            </tr> -->
+            <tr>
+                <td colspan="2">Late CheckIns and Early CheckOuts Total Time</td>
+                <td colspan="2">
+                <?php 
+                if($LatecheckInsAndEarlyCheckOuts > 0){
+                    $LatecheckInsAndEarlyCheckOuts_hours = floor($LatecheckInsAndEarlyCheckOuts / 60);
+                    $LatecheckInsAndEarlyCheckOuts_minutes = $LatecheckInsAndEarlyCheckOuts % 60;
+                    echo "<span style='font-weight: 500; color: black;'>" . $LatecheckInsAndEarlyCheckOuts_hours . " hour(s) " . $LatecheckInsAndEarlyCheckOuts_minutes . " minute(s)</span>";
+                }else{
+                    echo 0;
+                }
+                ?></td>
             </tr>
         </table>
     </div>
@@ -557,8 +600,8 @@ if ($userType === 'admin') {
             <tr>
                 <td>Overtime</td>
                 <td><?php
-                    if ($extraOrMissingMinutes > 0) {
-                        echo $extraOrMissingMinutes . ' mins';
+                    if ($over_time > 0) {
+                        echo $over_time . ' mins';
                     } else {
                         echo 0;
                     }
@@ -568,8 +611,8 @@ if ($userType === 'admin') {
                 <td>Overtime Amount</td>
                 <td><?php
                     $user_salary_allownce = 0;
-                    if ($extraOrMissingMinutes > 0) {
-                        $overtimeamount = (($extraOrMissingMinutes * $perminsalary) * 1.5);
+                    if ($over_time > 0) {
+                        $overtimeamount = (($over_time * $perminsalary) * 1.5);
                         echo number_format($overtimeamount);
                         $user_salary_allownce = $overtimeamount + $user_salary;
                     } else {
@@ -580,7 +623,7 @@ if ($userType === 'admin') {
             </tr>
             <tr class="total-row">
                 <td>Total Earnings</td>
-                <td><?php echo number_format($user_salary_allownce) ?></td>
+                <td><?php echo $user_salary_allownce > 0 ? number_format($user_salary_allownce) : $user_salary_allownce ?></td>
             </tr>
         </tbody>
     </table>
@@ -593,23 +636,21 @@ if ($userType === 'admin') {
         </thead>
         <tbody>
             <tr>
-                <td>Time Off</td>
+                <td>Late Checkin + Early Checkout Min</td>
                 <td><?php
-                    if ($extraOrMissingMinutes < 0) {
-                        echo   abs($extraOrMissingMinutes) . ' mins';
+                    if ($LatecheckInsAndEarlyCheckOuts > 0) {
+                        echo   abs($LatecheckInsAndEarlyCheckOuts) . ' mins';
                     } else {
                         echo 0;
                     } ?></td>
             </tr>
             <tr>
-                <td>Time Off Amount</td>
+                <td>Late Checkin + Early Checkout Fine</td>
                 <td><?php
-                    $user_salary_deduction = 0;
                     $offtimeamount = 0;
-                    if ($extraOrMissingMinutes < 0) {
-                        $offtimeamount = (($extraOrMissingMinutes * $perminsalary));
+                    if ($LatecheckInsAndEarlyCheckOuts > 0) {
+                        $offtimeamount = (($LatecheckInsAndEarlyCheckOuts * $perminsalary));
                         echo number_format(abs($offtimeamount));
-                        $user_salary_deduction = $user_salary_allownce - abs($offtimeamount);
                     } else {
                         echo 0;
                     }
@@ -634,14 +675,21 @@ if ($userType === 'admin') {
                 <?php $total_deduction = (abs($offtimeamount) + $absentamount) ?>
                 <td><?php echo number_format($total_deduction) ?></td>
             </tr>
+            <?php $compensation = $compensation ?  $compensation : 0; ?>
+            <?php if($compensation) { ?> 
+            <tr class="total-row">
+                <td>Compensation</td>
+                <td><?php echo number_format($compensation) ?></td>
+            </tr>
+            <?php }?>
         </tbody>
     </table>
 
     <div class="net-pay">
-        Net Pay: <?php echo number_format(abs($user_salary_allownce - $total_deduction)) ?><br>
+        Net Pay: <?php echo number_format(abs(($user_salary_allownce + $compensation) - $total_deduction)) ?><br>
     </div>
 
-    <div class="signatures">
+    <div class="signatures row">
         <div class="signature">
             ____________________________<br>
             Employer Signature
