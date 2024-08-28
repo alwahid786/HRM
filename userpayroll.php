@@ -82,9 +82,9 @@ if ($result_leaves->num_rows > 0) {
 $user_leaves->close();
 /////////////////////////////////////////////////////////////////////
 //////////////////////salary calculations///////////////////////////
-$perdaysalary = 0;
-$perhoursalary = 0;
-$perminsalary = 0;
+$perdaysalary_ = 0;
+$perhoursalary_ = 0;
+$perminsalary_ = 0;
 
 if ($user_salary) {
     if ($startdate && $enddate) {
@@ -92,12 +92,12 @@ if ($user_salary) {
         $end = new DateTime($enddate);
         $interval = $start->diff($end);
 
-        $perdaysalary = $user_salary / ($interval->days + 1);
-        $perhoursalary = $perdaysalary / 9;
-        $perminsalary = $perhoursalary / 60;
-        $perdaysalary = number_format($perdaysalary, 2);
-        $perhoursalary = number_format($perhoursalary, 2);
-        $perminsalary = number_format($perminsalary, 2);
+        $perdaysalary_ = $user_salary / ($interval->days + 1);
+        $perhoursalary_ = $perdaysalary_ / 9;
+        $perminsalary_ = $perhoursalary_ / 60;
+        $perdaysalary = number_format($perdaysalary_, 2);
+        $perhoursalary = number_format($perhoursalary_, 2);
+        $perminsalary = number_format($perminsalary_, 2);
     }
 }
 //////////////////////////////////////////////////////////////////////
@@ -606,7 +606,7 @@ if ($userType === 'admin') {
                 <td><?php
                     $user_salary_allownce = 0;
                     if ($over_time > 0) {
-                        $overtimeamount = (($over_time * $perminsalary) * 1.5);
+                        $overtimeamount = (($over_time * $perminsalary_) * 1.5);
                         echo number_format($overtimeamount);
                         $user_salary_allownce = $overtimeamount + $user_salary;
                     } else {
@@ -643,7 +643,7 @@ if ($userType === 'admin') {
                 <td><?php
                     $offtimeamount = 0;
                     if ($LatecheckInsAndEarlyCheckOuts > 0) {
-                        $offtimeamount = (($LatecheckInsAndEarlyCheckOuts * $perminsalary));
+                        $offtimeamount = (($LatecheckInsAndEarlyCheckOuts * $perminsalary_));
                         echo number_format(abs($offtimeamount));
                     } else {
                         echo 0;
@@ -656,7 +656,7 @@ if ($userType === 'admin') {
                     $user_salary_absent = 0;
                     $absentamount = 0;
                     if ($totalabsents > 0) {
-                        $absentamount = (($totalabsents * $perdaysalary));
+                        $absentamount = (($totalabsents * $perdaysalary_));
                         echo number_format(abs($absentamount));
                         $user_salary_absent = $user_salary_allownce - abs($absentamount);
                     } else {
