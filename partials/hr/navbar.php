@@ -245,6 +245,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['changePassword'])) {
             font-style: italic;
             font-size: 12px;
         }
+        .stamp {
+            display: flex;
+            justify-content: end; 
+            align-items:end; 
+            margin: 0 20px 0 0; 
+        }
     </style>
 </head>
 <body>

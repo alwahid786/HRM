@@ -3,6 +3,21 @@ require 'vendor/autoload.php';
 
 use Dompdf\Dompdf;
 
+
+// Convert image to base64
+function convertImageToBase64($imagePath)
+{
+    $imageData = file_get_contents($imagePath);
+    $base64Image = base64_encode($imageData);
+    $imageInfo = getimagesize($imagePath);
+    $mimeType = $imageInfo['mime'];
+    return "data:$mimeType;base64,$base64Image";
+}
+
+// image path saved in varibale 
+$imagePath = 'images/icons/stamp.png';
+$stamp_base64 = convertImageToBase64($imagePath);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['html_content'])) {
     $html_content = $_POST['html_content'];
     $css = "
@@ -87,6 +102,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['html_content'])) {
         .boldtext{
             font-weight: 700;
         }
+          .stamp {
+            margin-left: 43%;
+           }
         </style>
     ";
 

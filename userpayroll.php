@@ -289,6 +289,21 @@ function getWorkingDays($startDate, $endDate)
     }
     return $workingDays;
 }
+//////////////////////////////////////
+////////////// convert stamp image to base64 to generate pdf for salary slips /////////////////////////
+ // Convert image to base64
+ function convertImageToBase64($imagePath)
+ {
+     $imageData = file_get_contents($imagePath);
+     $base64Image = base64_encode($imageData);
+     $imageInfo = getimagesize($imagePath);
+     $mimeType = $imageInfo['mime'];
+     return "data:$mimeType;base64,$base64Image";
+ }
+
+ // image path 
+ $imagePath = 'images/icons/stamp.png';
+ $stamp_base64 = convertImageToBase64($imagePath);
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Include the navbar based on user type
 if ($userType === 'admin') {
@@ -704,14 +719,13 @@ if ($userType === 'admin') {
         Net Pay: <?php echo number_format(abs(($user_salary_allownce + $compensation) - $total_deduction)) ?><br>
     </div>
 
+
     <div style="align-content: center; margin-top:25px;">
-        <tr>
-            <td> &nbsp; &nbsp; &nbsp;Employer Sign:</td>
-            <td>---------------------------</td>
-            <td>&nbsp; &nbsp; &nbsp; Employee Sign:</td>
-            <td>---------------------------</td>
-        </tr>
+        <div class="stamp">
+            <img src="<?php echo $stamp_base64; ?>" width="100px" height="100px" alt="Stamp">
+        </div>
     </div>
+
 
     <div class="footer-slip">
         This is a system generated payslip
