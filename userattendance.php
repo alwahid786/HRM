@@ -57,32 +57,141 @@ if (isset($_POST['export']) && $_POST['export'] == 'true' && isset($_FILES['atte
 }
 
 // Fetch attendance data from the database
-$attendanceData = [];
+// $attendanceData = [];
+// $startdate = isset($_GET['startdate']) ? $_GET['startdate'] : null;
+// $enddate = isset($_GET['enddate']) ? $_GET['enddate'] : null;
+
+// if ($startdate && $enddate) {
+//     $stmt = $conn->prepare("SELECT * FROM attendance WHERE DATE(date_time) BETWEEN ? AND ?");
+//     $stmt->bind_param("ss", $startdate, $enddate);
+// } else {
+//     $stmt = $conn->prepare("SELECT * FROM attendance");
+// }
+// $stmt->execute();
+// $result = $stmt->get_result();
+
+// if ($result->num_rows > 0) {
+//     while ($row = $result->fetch_assoc()) {
+//         $attendanceData[] = $row;
+//     }
+// }
+
+
+// Fetch user information if user_no is set
+if (isset($_GET['user_no'])) {
+    $user_no = $_GET['user_no'];
+    $user_info = $conn->prepare("SELECT * FROM users WHERE user_no = ?");
+    $user_info->bind_param("s", $user_no);
+    $user_info->execute();
+    $result_userInfo = $user_info->get_result();
+    if ($row = $result_userInfo->fetch_assoc()) {
+        $user_name = $row['username'];
+        $user_role = $row['role'];
+        $user_salary = $row['salary'];
+    }
+    $user_info->close();
+} else {
+    $user_name = null;
+    $user_role = null;
+    $user_salary = null;
+}
+
+// Fetch users for the dropdown
+$usersQuery = "SELECT user_no, username FROM users";
+$usersData = $conn->query($usersQuery);
+
+// Initialize filter variables
 $startdate = isset($_GET['startdate']) ? $_GET['startdate'] : null;
 $enddate = isset($_GET['enddate']) ? $_GET['enddate'] : null;
+$user_no = isset($_GET['user_no']) ? $_GET['user_no'] : null;
 
-if ($startdate && $enddate) {
-    $stmt = $conn->prepare("SELECT * FROM attendance WHERE DATE(date_time) BETWEEN ? AND ?");
-    $stmt->bind_param("ss", $startdate, $enddate);
-} else {
-    $stmt = $conn->prepare("SELECT * FROM attendance");
+// Prepare the SQL query based on filters
+$sql = "SELECT * FROM attendance WHERE 1=1";
+
+if ($startdate) {
+    $startdateQuery = date('Y-m-d', strtotime($startdate));
+    $sql .= " AND DATE(date_time) >= ?";
 }
+if ($enddate) {
+    $enddateQuery = date('Y-m-d', strtotime($enddate));
+    $sql .= " AND DATE(date_time) <= ?";
+}
+if ($user_no) {
+    $sql .= " AND no = ?";
+}
+
+$stmt = $conn->prepare($sql);
+
+$params = [];
+$types = "";
+
+// Bind parameters based on filters
+if ($startdate) {
+    $params[] = $startdateQuery;
+    $types .= "s";
+}
+if ($enddate) {
+    $params[] = $enddateQuery;
+    $types .= "s";
+}
+if ($user_no) {
+    $params[] = $user_no;
+    $types .= "s";
+}
+
+if ($params) {
+    $stmt->bind_param($types, ...$params);
+}
+
 $stmt->execute();
 $result = $stmt->get_result();
+$attendanceData = $result->fetch_all(MYSQLI_ASSOC);
 
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $attendanceData[] = $row;
-    }
+
+
+/////////////////////////////////////////////////////////////////
+///////////search with only startdate or enddate //////////////
+// Initialize filter variables
+$basicstartDate = isset($_GET['basicstartDate']) ? $_GET['basicstartDate'] : null;
+$basicendDate = isset($_GET['basicendDate']) ? $_GET['basicendDate'] : null;
+
+// Prepare the SQL query based on filters
+$sql = "SELECT * FROM attendance WHERE 1=1";
+
+$params = [];
+$types = "";
+
+// Add filters to the query
+if ($basicstartDate) {
+    $basicstartDateQuery = date('Y-m-d', strtotime($basicstartDate));
+    $sql .= " AND DATE(date_time) >= ?";
+    $params[] = $basicstartDateQuery;
+    $types .= "s";
+}
+if ($basicendDate) {
+    $basicendDateQuery = date('Y-m-d', strtotime($basicendDate));
+    $sql .= " AND DATE(date_time) <= ?";
+    $params[] = $basicendDateQuery;
+    $types .= "s";
+}
+$stmt = $conn->prepare($sql);
+
+if ($params) {
+    $stmt->bind_param($types, ...$params);
 }
 
+$stmt->execute();
+$result = $stmt->get_result();
+$attendanceData = $result->fetch_all(MYSQLI_ASSOC);
+/////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
 //  for show all attendance data 
 // Reset filters if the user requesting to show all data user press Show All button then get all data  
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['showAllAttendance'])) {
     header("Location: userattendance.php");
     exit();
 }
-$stmt->close();
+
 
 
 // Include the navbar based on user type
@@ -116,40 +225,87 @@ if ($userType === 'admin') {
         </div>
         <div class="container-fluid">
             <div class="row d-flex justify-content-end">
-                <!-- Filter form -->
+                <!-- Filter Form -->
                 <form id="attendanceForm" method="GET" action="userattendance.php" style="display: flex; gap: 10px; justify-content: end;">
-                    <div class="col-2">
-                        <div>
-                            <label class="form-label">Start Date</label>
-                            <input id="StartDate" class="form-control" type="date" name="startdate" value="<?php echo isset($_GET['startdate']) ? ($_GET['startdate']) : ''; ?>" required>
+                    <div class="col-12 row">
+                        <div class="col-4">
+                            <div>
+                                <label class="form-label">Start Date</label>
+                                <input id="StartDate" class="form-control" type="date" name="startdate" value="<?php echo htmlspecialchars($startdate); ?>" required>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-2">
-                        <div class="d-flex" style="gap: 15px;">
+                        <div class="col-4">
                             <div>
                                 <label class="form-label">End Date</label>
-                                <input id="EndDate" class="form-control" type="date" name="enddate" value="<?php echo isset($_GET['enddate']) ? ($_GET['enddate']) : ''; ?>" required>
+                                <input id="EndDate" class="form-control" type="date" name="enddate" value="<?php echo htmlspecialchars($enddate); ?>" required>
                             </div>
+                        </div>
+                        <?php if ($userType !== 'user'): ?>
+                            <div class="col-4">
+                                <div>
+                                    <label class="form-label">Users</label>
+                                    <select id="user_no" class="form-control" name="user_no" required>
+                                        <option value="">Select a User</option>
+                                        <?php
+                                        if ($usersData->num_rows > 0) {
+                                            while ($user = $usersData->fetch_assoc()) {
+                                                echo '<option value="' . $user['user_no'] . '" ' .
+                                                    (($user_no == $user['user_no']) ? 'selected' : '') . '>' .
+                                                    $user['username'] . '</option>';
+                                            }
+                                        } else {
+                                            echo '<option value="">No users found</option>';
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                            </div>
+                        <?php else: ?>
+                            <input type="hidden" name="user_no" value="<?php echo htmlspecialchars($userNo); ?>">
+                        <?php endif; ?>
+                        <div class="col-4">
                             <div style="padding-top: 32px;">
                                 <button type="submit" class="btn btn-primary">Filter</button>
                             </div>
                         </div>
-                        <br>
                     </div>
                 </form>
+
+
+                <form id="attendanceForm" method="GET" action="userattendance.php" style="display: flex; gap: 10px; justify-content: end;">
+                    <div class="col-12 row">
+                        <div class="col-4">
+                            <div>
+                                <label class="form-label">Start Date</label>
+                                <input id="basicStartDate" class="form-control" type="date" name="basicstartDate" value="<?php echo ($basicstartDate); ?>" required>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div>
+                                <label class="form-label">End Date</label>
+                                <input id="basicEndDate" class="form-control" type="date" name="basicendDate" value="<?php echo ($basicendDate); ?>" required>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div style="padding-top: 32px;">
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+
 
                 <div class="d-flex justify-content-end">
                     <form method="POST" action="" style="margin-left: 15px;">
                         <button type="submit" name="showAllAttendance" class="btn btn-primary">Show All</button>
                     </form>
                     <form method="POST" action="userattendanceexportpdf.php" style="margin-left: 15px;">
-                        <input type="hidden" name="startdate" value="<?php echo (isset($_GET['startdate']) ? $_GET['startdate'] : ''); ?>">
-                        <input type="hidden" name="enddate" value="<?php echo (isset($_GET['enddate']) ? $_GET['enddate'] : ''); ?>">
+                        <input type="hidden" name="startdate" value="<?php echo htmlspecialchars($startdate); ?>">
+                        <input type="hidden" name="enddate" value="<?php echo htmlspecialchars($enddate); ?>">
                         <button type="submit" name="exportPdf" class="btn btn-primary">Export to PDF</button>
                     </form>
-                    <a href="userpayroll.php" class="btn btn-dark text-white ">
-                        User's Payroll
-                    </a>
+                    <a href="userpayroll.php" class="btn btn-dark text-white">User's Payroll</a>
                 </div>
             </div>
         </div>
@@ -287,7 +443,7 @@ if ($userType === 'admin') {
 <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
 
 
-<script>
+<!-- <script>
     document.getElementById('attendanceForm').addEventListener('submit', function(event) {
         var startDateInput = document.getElementById('StartDate');
         var endDateInput = document.getElementById('EndDate');
@@ -311,7 +467,7 @@ if ($userType === 'admin') {
             }
         }
     });
-</script>
+</script> -->
 <script>
     $(document).ready(function() {
         $('#userattendancedatatable').DataTable({
