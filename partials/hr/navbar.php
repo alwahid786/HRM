@@ -245,6 +245,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['changePassword'])) {
             font-style: italic;
             font-size: 12px;
         }
+        .stamp {
+            display: flex;
+            justify-content: end; 
+            align-items:end; 
+            margin: 0 20px 0 0; 
+        }
     </style>
 </head>
 <body>
@@ -269,6 +275,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['changePassword'])) {
                             <li><a class="dropdown-item" href="hrcreateuser.php">Create User</a></li>
                             <li><a class="dropdown-item" href="hruserlist.php">List of Users</a></li>
                             <li><a class="dropdown-item" href="userattendance.php">User's Attendance</a></li>
+                            <li><a class="dropdown-item" href="userpayroll.php">User Payroll</a></li>
                         </ul>
                     </li>
                     <li class="nav-item">

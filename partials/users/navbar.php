@@ -169,6 +169,93 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['changePassword'])) {
             background: linear-gradient(to right, #35592d, #1e5d75) !important;
             color: #fff !important;
         }
+
+        .payslip-container {
+            background-color: #fff;
+            width: 700px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #000;
+        }
+        .payslip-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .payslip-header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .company-info, .employee-info {
+            margin-bottom: 20px;
+        }
+        .info-table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .info-table td {
+            padding: 8px 5px;
+        }
+        .info-table td:first-child {
+            text-align: left;
+        }
+        .info-table td:last-child {
+            text-align: right;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid black;
+        }
+        th {
+            background-color: #f3f3f3;
+        }
+        .total-row td {
+            font-weight: bold;
+        }
+        .net-pay {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .signatures {
+            display: flex !important;
+            justify-content: space-between !important;
+            margin-top: 30px !important;
+        }
+        .signature {
+            text-align: center !important;
+            width: 40% !important;
+        }
+        .footer-slip {
+            text-align: center;
+            margin-top: 50px;
+            font-style: italic;
+            font-size: 12px;
+        }
+
+        .width-25{
+             width: 25%;
+        }
+        
+        .width-65{
+            width: 65%;
+        }
+
+        .boldtext{
+            font-weight: 700;
+        }
+        .stamp {
+            display: flex;
+            justify-content: end; 
+            align-items:end; 
+            margin: 0 20px 0 0; 
+        }
     </style>
 </head>
 
@@ -188,6 +275,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['changePassword'])) {
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-white" href="userleaves.php">Leaves</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="userpayroll.php">Payroll</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav ms-auto">

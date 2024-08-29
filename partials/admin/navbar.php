@@ -264,6 +264,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['changePassword'])) {
         .boldtext{
             font-weight: 700;
         }
+        .stamp {
+            display: flex;
+            justify-content: center; 
+            align-items: center; 
+            margin: 0 20px 0 0; 
+        }
         
     </style>
 </head>
