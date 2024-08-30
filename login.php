@@ -63,7 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.0-beta2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .btn-color {
-            background-color: #0e1c36;
+            background-color: #37daaf;
             color: #fff;
         }
 
@@ -72,40 +72,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         .bgcolor {
-            background: linear-gradient(to right, #35592d, #1e5d75) !important;
+            background: hsla(148, 100%, 91%, 1);
+
+            background: linear-gradient(180deg, hsla(148, 100%, 91%, 1) 0%, hsla(211, 100%, 85%, 1) 100%);
+
+            background: -moz-linear-gradient(180deg, hsla(148, 100%, 91%, 1) 0%, hsla(211, 100%, 85%, 1) 100%);
+
+            background: -webkit-linear-gradient(180deg, hsla(148, 100%, 91%, 1) 0%, hsla(211, 100%, 85%, 1) 100%);
+
+            filter: progid: DXImageTransform.Microsoft.gradient(startColorstr="#CFFFE5", endColorstr="#B5D9FF", GradientType=1);
         }
 
         .form-box {
             padding: 20px;
-            border: 1px #73dc00 solid;
-            border-radius: 4px;
+            border-radius: 10px;
             box-shadow: 0 6px 10px 0 #222;
-            background: linear-gradient(100deg, #73dc00, #01ceff);
-        }
-
-        .circle-background {
-            display: inline-block;
-            background: #0e1c36;
-            padding: 20px;
-            border-radius: 50%;
-        }
-
-        .circle-background img {
-            display: block;
-            height: fit-content;
-            background: #0e1c36;
-            border: none;
-            /* width: 150px; */
-            /* height: 150px; */
-            border-radius: 52px;
-        }
-
-
-        .profile-image-pic {
-            height: 200px;
-            /* width: 200px; */
-            object-fit: cover;
-            padding: 18px;
+            background: white;
         }
     </style>
 </head>
@@ -114,17 +96,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="container vh-100 d-flex align-items-center justify-content-center">
         <div class="row w-100">
             <div class="col-md-6 offset-md-3">
-                <h2 class="text-center text-white mt-2">Tetra Technologies</h2>
-                <div class="text-center text-white">Leave Management System</div>
                 <div class="card my-3 form-box">
                     <form action="login.php" method="POST" class="card-body cardbody-color p-lg-5">
                         <div class="text-center">
                             <!-- Container for the circular background -->
                             <div class="circle-background">
-                                <img src="images/icons/company_logo.png" class="img-fluid profile-image-pic img-thumbnail" width="200px" alt="profile">
+                                <img src="images/icons/logo_complete.svg" class="img-fluid profile-image-pic" width="400px" alt="profile">
+                                <p class="mb-5">Welcome to Employee Managament System</p>
                             </div>
                         </div>
-                        <div class="mb-3">
+                        <div class="my-3">
                             <input type="text" class="form-control" id="login" name="login" placeholder="login" required>
                         </div>
                         <div class="mb-3">
