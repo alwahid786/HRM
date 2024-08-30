@@ -26,9 +26,9 @@ if (isset($_POST['export']) && $_POST['export'] === 'true' && isset($_FILES['att
 
     try {
         if ($fileExtension === 'xls') {
-            $reader = new Xls();
+            $reader = new xls();
         } else {
-            $reader = new Xlsx();
+            $reader = new xlsx();
         }
 
         // Load the file into PhpSpreadsheet
