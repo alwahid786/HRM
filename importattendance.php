@@ -1,6 +1,6 @@
 <?php
-require 'vendor/autoload.php'; 
-require 'config.php'; 
+require 'vendor/autoload.php';
+require 'config.php';
 
 use PhpOffice\PhpSpreadsheet\Reader\Xls;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
@@ -36,8 +36,9 @@ if (isset($_POST['export']) && $_POST['export'] === 'true' && isset($_FILES['att
         $worksheet = $spreadsheet->getActiveSheet();
         $rows = $worksheet->toArray();
 
-    
-        $stmt = $conn->prepare("INSERT INTO attendance 
+
+        $stmt = $conn->prepare(
+            "INSERT INTO attendance 
             (department, name, no, date_time, status, location_id, id_number, verify_code, card_no) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
@@ -48,9 +49,9 @@ if (isset($_POST['export']) && $_POST['export'] === 'true' && isset($_FILES['att
 
         // Loop through the rows and insert them into the database
         foreach ($rows as $index => $row) {
-            if ($index === 0) continue; 
+            if ($index === 0) continue;
 
-        
+
             $department = ($row[0]);
             $name = ($row[1]);
             $no = ($row[2]);
@@ -58,20 +59,37 @@ if (isset($_POST['export']) && $_POST['export'] === 'true' && isset($_FILES['att
             // $dateTime = ($row[3]);
             // $dateTimeFormatted = date('Y-d-m H:i:s', strtotime($dateTime));
 
+            // $dateString = ($row[3]);
+            // $dateTime = DateTime::createFromFormat('d/m/Y H:i:s', $dateString);
+            // $dateTimeFormatted = $dateTime->format('Y-m-d H:i:s');
             $dateString = ($row[3]);
-            $dateTime = DateTime::createFromFormat('d/m/Y H:i:s', $dateString);
+            $dateTime = DateTime::createFromFormat('m/d/Y H:i:s', $dateString);
+            if (
+                $dateTime === false
+            ) {
+                echo "Failed to parse date: $dateString";
+                exit;
+            }
             $dateTimeFormatted = $dateTime->format('Y-m-d H:i:s');
 
             $status = ($row[4]);
             $locationId = ($row[5]);
             $idNumber = ($row[6]);
-            $verifyCode = ($row[7]);
             $cardNo = ($row[8]);
+            $verifyCode = ($row[7]);
 
             // Bind the parameters
             $stmt->bind_param(
-                "ssisssisi", 
-                $department, $name, $no, $dateTimeFormatted, $status, $locationId, $idNumber, $verifyCode, $cardNo
+                "ssisssisi",
+                $department,
+                $name,
+                $no,
+                $dateTimeFormatted,
+                $status,
+                $locationId,
+                $idNumber,
+                $verifyCode,
+                $cardNo
             );
 
             if (!$stmt->execute()) {
@@ -87,4 +105,3 @@ if (isset($_POST['export']) && $_POST['export'] === 'true' && isset($_FILES['att
     }
 }
 $conn->close();
-?>

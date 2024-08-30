@@ -4,8 +4,8 @@ session_start();
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
+  header("Location: login.php");
+  exit();
 }
 
 // Retrieve the user's type from the session or database
@@ -19,72 +19,72 @@ $stmt->close();
 
 // Check if the user type is either admin or hradmin
 if ($userType != 'admin') {
-    die("Access denied. You do not have permission to view this page.");
-    header('location: login.php');
+  die("Access denied. You do not have permission to view this page.");
+  header('location: login.php');
 }
 
 // Check if form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Retrieve form values
-    $username = $_POST['username'] ?? null;
-    $login = $_POST['login'] ?? null;
-    $email = $_POST['email'] ?? null;
-    $password = $_POST['password'] ?? null;
-    $userType = $_POST['userType'] ?? null;
-    $hiringDate = $_POST['hiringDate'] ?? null;
-    $role = $_POST['role'] ?? null;
-    $salary = $_POST['salary'] ?? null;
-    $user_no = $_POST['user_no'] ?? null;
+  // Retrieve form values
+  $username = $_POST['username'] ?? null;
+  $login = $_POST['login'] ?? null;
+  $email = $_POST['email'] ?? null;
+  $password = $_POST['password'] ?? null;
+  $userType = $_POST['userType'] ?? null;
+  $hiringDate = $_POST['hiringDate'] ?? null;
+  $role = $_POST['role'] ?? null;
+  $salary = $_POST['salary'] ?? null;
+  $user_no = $_POST['user_no'] ?? null;
 
-    // Check if any field is empty
-    if (empty($username) || empty($login) || empty($email) || empty($password) || empty($userType) || empty($hiringDate) || empty($role) || empty($salary)|| empty($user_no)) {
-        die("Please fill in all fields.");
-    }
+  // Check if any field is empty
+  if (empty($username) || empty($login) || empty($email) || empty($password) || empty($userType) || empty($hiringDate) || empty($role) || empty($salary) || empty($user_no)) {
+    die("Please fill in all fields.");
+  }
 
-    // Check if the login already exists
-    $stmt = $conn->prepare("SELECT id FROM users WHERE login = ?");
-    $stmt->bind_param("s", $login);
-    $stmt->execute();
-    $stmt->store_result();
+  // Check if the login already exists
+  $stmt = $conn->prepare("SELECT id FROM users WHERE login = ?");
+  $stmt->bind_param("s", $login);
+  $stmt->execute();
+  $stmt->store_result();
 
-    if ($stmt->num_rows > 0) {
-        die("Error: A user with this login already exists.");
-    }
-    $stmt->close();
+  if ($stmt->num_rows > 0) {
+    die("Error: A user with this login already exists.");
+  }
+  $stmt->close();
 
-    // Hash the password
-    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+  // Hash the password
+  $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-    // Prepare and bind
-    $stmt = $conn->prepare("INSERT INTO users (user_no, username, login, email, password, user_type, hiring_date,role,salary) VALUES ( ?,?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("isssssssi", $user_no, $username, $login, $email, $hashedPassword, $userType, $hiringDate, $role, $salary);
+  // Prepare and bind
+  $stmt = $conn->prepare("INSERT INTO users (user_no, username, login, email, password, user_type, hiring_date,role,salary) VALUES ( ?,?, ?, ?, ?, ?, ?, ?, ?)");
+  $stmt->bind_param("isssssssi", $user_no, $username, $login, $email, $hashedPassword, $userType, $hiringDate, $role, $salary);
 
-    // Execute the query
-    if ($stmt->execute()) {
-       echo "";
-    } else {
-        echo "Error: " . $stmt->error;
-    }
+  // Execute the query
+  if ($stmt->execute()) {
+    echo "";
+  } else {
+    echo "Error: " . $stmt->error;
+  }
 
-    // Close the statement and connection
-    $stmt->close();
-    $conn->close();
+  // Close the statement and connection
+  $stmt->close();
+  $conn->close();
 }
 ?>
 
 
 <?php
- include_once 'partials/admin/navbar.php';
+include_once 'partials/admin/navbar.php';
 ?>
 
 <section class="container-fluid mt-5">
-   <div class="container">
-   <h2>Admin Create User</h2>
+  <div class="container bg-white p-3" style="border-radius: 10px;box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;">
+    <h2>Add Employee</h2>
     <form method="post" action="admincreateuser.php">
       <div class="row mb-2">
         <div class="col-md-6">
           <label for="username" class="form-label">User Name</label>
-          <input type="text" class="form-control" id="username" name="username" >
+          <input type="text" class="form-control" id="username" name="username">
         </div>
         <div class="col-md-6">
           <label for="login" class="form-label">Login</label>
@@ -94,7 +94,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       <div class="row mb-2">
         <div class="col-md-6">
           <label for="email" class="form-label">Email</label>
-          <input type="email" class="form-control" id="email" name="email" >
+          <input type="email" class="form-control" id="email" name="email">
         </div>
         <div class="col-md-6">
           <label for="password" class="form-label">Password</label>
@@ -121,14 +121,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       <div class="row mb-2">
         <div class="col-md-4">
           <label class="form-label">User Role</label>
-          <input type="text" class="form-control" name="role" >
+          <input type="text" class="form-control" name="role">
         </div>
         <div class="col-md-4">
-          <label  class="form-label">User Salary</label>
+          <label class="form-label">User Salary</label>
           <input type="text" class="form-control" name="salary">
         </div>
         <div class="col-md-4">
-          <label  class="form-label">User No</label>
+          <label class="form-label">User No</label>
           <input type="number" class="form-control" name="user_no">
         </div>
       </div>
@@ -137,9 +137,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <a href="admin.php" class="btn btn-danger">Cancel</a>
       </div>
     </form>
-   </div>
+  </div>
 </section>
 
 <?php
- include_once 'partials/admin/footer.php';
+include_once 'partials/admin/footer.php';
 ?>

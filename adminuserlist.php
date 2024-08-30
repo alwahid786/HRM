@@ -95,24 +95,85 @@ $result = $stmt->get_result();
 
 <?php include_once 'partials/admin/navbar.php'; ?>
 
-<section class="container-fluid" style="padding: 60px 0 40px 0;">
-    <div class="container-fluid">
+<style>
+    table,
+    table thead,
+    table thead tr,
+    table thead tr th,
+    table tbody tr td {
+        border: none;
+    }
+
+    table thead,
+    table thead tr,
+    table thead tr th {
+        background-color: #37daaf2e !important;
+        height: 50px;
+        /* justify-content: center; */
+        /* vertical-align: center; */
+    }
+
+    .active-badge {
+        background-color: #28c30ca6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+    }
+
+    .inactive-badge {
+        background-color: #ff000087;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-blue {
+        background-color: #55b6fb57;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .block-badge {
+        background-color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid red;
+        color: red;
+        font-weight: 600;
+
+    }
+
+    .block-badge:hover {
+        background-color: #ff000087;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid red;
+        color: black;
+        font-weight: 600;
+    }
+</style>
+<section class="container-fluid p-5">
+    <div class="container-fluid bg-white p-3" style="border-radius: 10px;box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;">
         <h2>All Users</h2>
-        <table id="admindatatable" class="table table-striped" style="width:100%">
+        <table cellspacing="0" cellpadding="0" id="admindatatable" class="table mt-3" style="width:100%">
             <thead>
                 <tr>
-                    <th>User No</th>
-                    <th>Username</th>
-                    <th>Login</th>
-                    <th>Email</th>
-                    <th>User Type</th>
-                    <th>Hiring Date</th>
-                    <th>Role</th>
-                    <th>Salary</th>
-                    <th>Created At</th>
-                    <th>Status</th>
-                    <th>Edit</th>
-                    <th>Action</th>
+                    <th style="border-top-left-radius: 10px; text-align: center; justify-content: center;">User No</th>
+                    <th style="text-align: center; justify-content: center;">Username</th>
+                    <th style="text-align: center; justify-content: center;">Login</th>
+                    <th style="text-align: center; justify-content: center;">Email</th>
+                    <th style="text-align: center; justify-content: center;">User Type</th>
+                    <th style="text-align: center; justify-content: center;">Hiring Date</th>
+                    <th style="text-align: center; justify-content: center;">Role</th>
+                    <th style="text-align: center; justify-content: center;">Salary</th>
+                    <th style="text-align: center; justify-content: center;">Created At</th>
+                    <th style="text-align: center; justify-content: center;">Status</th>
+                    <th style="text-align: center; justify-content: center;">Edit</th>
+                    <th style="border-top-right-radius: 10px; text-align: center; justify-content: center;">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -120,9 +181,9 @@ $result = $stmt->get_result();
                     <?php
                     $statusClass = '';
                     if ($row['status'] == 'active') {
-                        $statusClass = 'bg-green text-white';
+                        $statusClass = 'active-badge text-white';
                     } elseif ($row['status'] == 'blocked') {
-                        $statusClass = 'bg-red text-white';
+                        $statusClass = 'inactive-badge text-white';
                     }
                     ?>
                     <tr>
@@ -136,17 +197,17 @@ $result = $stmt->get_result();
                         <td><?php echo ($row['salary']); ?></td>
                         <td><?php echo ($row['created_at']); ?></td>
                         <td>
-                            <div class="<?php echo $statusClass; ?>"><?php echo ($row['status']); ?></div>
+                            <div class="<?php echo $statusClass; ?> rounded-pill"><?php echo ($row['status']); ?></div>
                         </td>
                         <td class="d-flex justify-content-center align-items-center">
-                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#leavelimitModal"
+                            <button type="button" class="btn btn-blue" data-bs-toggle="modal" data-bs-target="#leavelimitModal"
                                 data-userid="<?php echo ($row['id']); ?>"
                                 data-leavelimit="<?php echo ($row['leave_limit']); ?>"
                                 data-leavestartdate="<?php echo ($row['leave_start_date']); ?>"
                                 data-leaveenddate="<?php echo ($row['leave_end_date']); ?>"
                                 data-salary="<?php echo ($row['salary']); ?>"
-                                data-email="<?php echo  ($row['email']); ?>"
-                                data-login="<?php echo  ($row['login']); ?>">
+                                data-email="<?php echo ($row['email']); ?>"
+                                data-login="<?php echo ($row['login']); ?>">
                                 <img src="images/icons/edit.png" width="24px" height="24px">
                             </button>
                         </td>
@@ -154,7 +215,7 @@ $result = $stmt->get_result();
                             <?php if ($row['status'] == 'active'): ?>
                                 <form method="post" action="">
                                     <input type="hidden" name="user_id" value="<?php echo ($row['id']); ?>">
-                                    <button type="submit" name="action" value="block" class="btn btn-warning btn-sm">Block</button>
+                                    <button type="submit" name="action" value="block" class="btn block-badge btn-sm">Block</button>
                                 </form>
                             <?php else: ?>
                                 <form method="post" action="">
