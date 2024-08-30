@@ -33,7 +33,7 @@ $enddate = isset($_GET['enddate']) ? $_GET['enddate'] : null;
 $startdateQuery = null;
 $enddateQuery = null;
 $LatecheckInsAndEarlyCheckOuts = 0;
-
+$totalWorkingMinForSession  = 0;
 if (!empty($startdate)) {
     $startdateQuery = date('Y-m-d', strtotime($startdate));
 }
