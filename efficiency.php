@@ -78,12 +78,17 @@ $query = "
            COALESCE(uep.points, 0) AS efficiency_points
     FROM users u
     LEFT JOIN (
-        SELECT user_id, MAX(points) AS points
-        FROM user_efficiency_points
-        GROUP BY user_id
+        SELECT user_id, points
+        FROM user_efficiency_points uep1
+        WHERE uep1.id = (
+            SELECT MAX(uep2.id)
+            FROM user_efficiency_points uep2
+            WHERE uep2.user_id = uep1.user_id
+        )
     ) uep ON u.id = uep.user_id
     WHERE u.user_type != 'admin' AND u.status != 'blocked'
 ";
+
 $result_user_data = $conn->query($query);
 
 if ($result_user_data === false) {
@@ -102,6 +107,35 @@ if ($efficiencysql === false) {
         $efficiencyData[] = $row;
     }
 }
+
+
+
+// $userIdQuery = "SELECT DISTINCT user_id FROM user_efficiency_points";
+// $userIdResult = $conn->query($userIdQuery);
+
+// if ($userIdResult === false) {
+//     echo "Error: " . $conn->error;
+// } else {
+//     while ($row = $userIdResult->fetch_assoc()) {
+//         $userId = $row['user_id'];
+//         $efficiencyTotalAverageQuery = "SELECT AVG(points) AS average_points FROM user_efficiency_points WHERE user_id=$userId";
+//         $totalAverageResult = $conn->query($efficiencyTotalAverageQuery);
+
+//         if ($totalAverageResult === false) {
+//             echo "Error: " . $conn->error;
+//         } else {
+//             $averageRow = $totalAverageResult->fetch_assoc();
+//             if ($averageRow) {
+//                 $averagePoints = $averageRow['average_points'];
+//                 echo " $userId  " . $averagePoints . "<br>";
+//             } else {
+//                 echo " $userId.<br>";
+//             }
+//         }
+//     }
+// }
+
+
 ?>
 
 <?php include_once 'partials/admin/navbar.php'; ?>
@@ -119,6 +153,7 @@ if ($efficiencysql === false) {
                     <th>Role</th>
                     <th>Status</th>
                     <th>Efficiency Points</th>
+                    <th>Efficiency Average</th>
                     <th>Edit</th>
                 </tr>
             </thead>
@@ -142,6 +177,9 @@ if ($efficiencysql === false) {
                             <div class="<?php echo htmlspecialchars($statusClass); ?>"><?php echo htmlspecialchars($row['status']); ?></div>
                         </td>
                         <td><?php echo htmlspecialchars($row['efficiency_points']); ?></td>
+                        <td>
+                             
+                        </td>
                         <td class="d-flex justify-content-center align-items-center">
                             <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#leavelimitModal"
                                 data-userid="<?php echo ($row['id']); ?>">
@@ -177,7 +215,7 @@ if ($efficiencysql === false) {
                                         <div class="mb-3">
                                             <input type="text" name="efficiency_name[]" value="<?php echo htmlspecialchars($data['efficiency']) . ' (' . htmlspecialchars($data['efficiency_points']) . ' points)'; ?>" class="form-control" readonly>
                                             <input type="hidden" name="efficiency_id[]" value="<?php echo htmlspecialchars($data['id']); ?>">
-                                            <input type="number" name="assigned_points[]" class="form-control mt-2" placeholder="Enter points for <?php echo htmlspecialchars($data['efficiency']); ?>" required>
+                                            <input type="number" name="assigned_points[]" class="form-control mt-2" min="0" max="<?php echo htmlspecialchars($data['efficiency_points']) ?>" placeholder="Enter points for <?php echo htmlspecialchars($data['efficiency']); ?>" required>
                                         </div>
                                     <?php endforeach; ?>
                                 <?php else : ?>
