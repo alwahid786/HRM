@@ -8,7 +8,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 'admin') {
     exit();
 }
 
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['user_id']) && isset($_POST['efficiency_id']) && isset($_POST['assigned_points'])) {
         $userId = $_POST['user_id'];
@@ -16,7 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $assignedPoints = $_POST['assigned_points'];
         $created_at = date('Y-m-d H:i:s');
 
-       
         $totalPoints = 0;
         $efficiencyPointsMap = [];
 
@@ -30,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         $efficiencyStmt->close();
 
-        $conn->begin_transaction(); 
+        $conn->begin_transaction();
 
         try {
             foreach ($efficiencyIds as $index => $efficiencyId) {
@@ -48,7 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 }
             }
 
-           
             $maxTotalPoints = array_sum($efficiencyPointsMap);
             $normalizedScore = ($totalPoints / $maxTotalPoints) * 100;
 
@@ -72,10 +69,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-// Retrieve all users data with their efficiency points
+// Retrieve all users data with their efficiency points and efficiency average
 $query = "
-    SELECT u.id, u.user_no, u.username, u.email, u.user_type, u.role, u.status, 
-           COALESCE(uep.points, 0) AS efficiency_points
+    SELECT u.id, u.user_no, u.username, u.email, u.user_type, u.role, u.status,
+           COALESCE(uep.points, 0) AS efficiency_points,
+           COALESCE(AVG(uep1.points), 0) AS efficiency_average
     FROM users u
     LEFT JOIN (
         SELECT user_id, points
@@ -86,7 +84,9 @@ $query = "
             WHERE uep2.user_id = uep1.user_id
         )
     ) uep ON u.id = uep.user_id
+    LEFT JOIN user_efficiency_points uep1 ON u.id = uep1.user_id
     WHERE u.user_type != 'admin' AND u.status != 'blocked'
+    GROUP BY u.id, u.user_no, u.username, u.email, u.user_type, u.role, u.status, uep.points
 ";
 
 $result_user_data = $conn->query($query);
@@ -94,20 +94,6 @@ $result_user_data = $conn->query($query);
 if ($result_user_data === false) {
     echo "Error: " . $conn->error;
 }
-
-// Fetch Efficiency Categories
-$fetchEfficiencyCategories = "SELECT * FROM efficiency_categories";
-$efficiencysql = $conn->query($fetchEfficiencyCategories);
-
-if ($efficiencysql === false) {
-    echo "Error: " . $conn->error;
-} else {
-    $efficiencyData = [];
-    while ($row = $efficiencysql->fetch_assoc()) {
-        $efficiencyData[] = $row;
-    }
-}
-
 
 
 // $userIdQuery = "SELECT DISTINCT user_id FROM user_efficiency_points";
@@ -135,7 +121,18 @@ if ($efficiencysql === false) {
 //     }
 // }
 
+// Fetch Efficiency Categories
+$fetchEfficiencyCategories = "SELECT * FROM efficiency_categories";
+$efficiencysql = $conn->query($fetchEfficiencyCategories);
 
+if ($efficiencysql === false) {
+    echo "Error: " . $conn->error;
+} else {
+    $efficiencyData = [];
+    while ($row = $efficiencysql->fetch_assoc()) {
+        $efficiencyData[] = $row;
+    }
+}
 ?>
 
 <?php include_once 'partials/admin/navbar.php'; ?>
@@ -155,6 +152,7 @@ if ($efficiencysql === false) {
                     <th>Efficiency Points</th>
                     <th>Efficiency Average</th>
                     <th>Edit</th>
+                    <th>Efficiency History</th>
                 </tr>
             </thead>
             <tbody>
@@ -168,23 +166,26 @@ if ($efficiencysql === false) {
                     }
                     ?>
                     <tr>
-                        <td><?php echo htmlspecialchars($row['user_no']); ?></td>
-                        <td><?php echo htmlspecialchars($row['username']); ?></td>
-                        <td><?php echo htmlspecialchars($row['email']); ?></td>
-                        <td><?php echo htmlspecialchars($row['user_type']); ?></td>
-                        <td><?php echo htmlspecialchars($row['role']); ?></td>
+                        <td><?php echo ($row['user_no']); ?></td>
+                        <td><?php echo ($row['username']); ?></td>
+                        <td><?php echo ($row['email']); ?></td>
+                        <td><?php echo ($row['user_type']); ?></td>
+                        <td><?php echo ($row['role']); ?></td>
                         <td>
-                            <div class="<?php echo htmlspecialchars($statusClass); ?>"><?php echo htmlspecialchars($row['status']); ?></div>
+                            <div class="<?php echo ($statusClass); ?>"><?php echo ($row['status']); ?></div>
                         </td>
-                        <td><?php echo htmlspecialchars($row['efficiency_points']); ?></td>
-                        <td>
-                             
-                        </td>
+                        <td><?php echo ($row['efficiency_points']); ?></td>
+                        <td><?php echo (number_format($row['efficiency_average'], 2)); ?></td>
                         <td class="d-flex justify-content-center align-items-center">
                             <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#leavelimitModal"
                                 data-userid="<?php echo ($row['id']); ?>">
                                 <img src="images/icons/edit.png" width="24px" height="24px">
                             </button>
+                        </td>
+                        <td>
+                            <a href="efficiencydetails.php?user_id=<?php echo urlencode($row['id']); ?>">
+                                <img src="images/icons/history.png" width="24px" height="24px" class="img-fluid">
+                            </a>
                         </td>
                     </tr>
                 <?php endwhile; ?>
@@ -192,6 +193,7 @@ if ($efficiencysql === false) {
         </table>
     </div>
 </section>
+
 
 <!-- Update User Efficiency Modal -->
 <div class="modal fade" id="leavelimitModal" tabindex="-1" aria-labelledby="leavelimitModalLabel" aria-hidden="true">
@@ -209,13 +211,13 @@ if ($efficiencysql === false) {
                     <input type="hidden" id="modal-user-id" name="user_id" value="">
                     <div class="container-fluid">
                         <div class="row">
-                            <div class="col-6">
+                            <div class="col-12">
                                 <?php if (!empty($efficiencyData)) : ?>
                                     <?php foreach ($efficiencyData as $data) : ?>
                                         <div class="mb-3">
-                                            <input type="text" name="efficiency_name[]" value="<?php echo htmlspecialchars($data['efficiency']) . ' (' . htmlspecialchars($data['efficiency_points']) . ' points)'; ?>" class="form-control" readonly>
-                                            <input type="hidden" name="efficiency_id[]" value="<?php echo htmlspecialchars($data['id']); ?>">
-                                            <input type="number" name="assigned_points[]" class="form-control mt-2" min="0" max="<?php echo htmlspecialchars($data['efficiency_points']) ?>" placeholder="Enter points for <?php echo htmlspecialchars($data['efficiency']); ?>" required>
+                                            <input type="text" name="efficiency_name[]" value="<?php echo ($data['efficiency']) . ' (' . ($data['efficiency_points']) . ' points)'; ?>" class="form-control" readonly>
+                                            <input type="hidden" name="efficiency_id[]" value="<?php echo ($data['id']); ?>">
+                                            <input type="number" name="assigned_points[]" class="form-control mt-2" min="0" max="<?php echo ($data['efficiency_points']) ?>" placeholder="Enter points for <?php echo ($data['efficiency']); ?>" required>
                                         </div>
                                     <?php endforeach; ?>
                                 <?php else : ?>
@@ -232,37 +234,37 @@ if ($efficiencysql === false) {
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         var efficiencyForm = document.getElementById('efficiencyForm');
         var modal = document.getElementById('leavelimitModal');
         var modalUserIdInput = document.getElementById('modal-user-id');
 
-        modal.addEventListener('show.bs.modal', function (event) {
+        modal.addEventListener('show.bs.modal', function(event) {
             var button = event.relatedTarget;
             var userId = button.getAttribute('data-userid');
             modalUserIdInput.value = userId;
         });
 
-        efficiencyForm.addEventListener('submit', function (event) {
+        efficiencyForm.addEventListener('submit', function(event) {
             event.preventDefault();
             var formData = new FormData(efficiencyForm);
 
             fetch('', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.text())
-            .then(data => {
-                console.log(data);
-                if (data.includes('successfully')) {
-                    efficiencyForm.reset();
-                    var modalInstance = bootstrap.Modal.getInstance(modal);
-                    modalInstance.hide();
-                    location.reload();
-                } else {
-                    alert('An error occurred');
-                }
-            });
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(data => {
+                    console.log(data);
+                    if (data.includes('successfully')) {
+                        efficiencyForm.reset();
+                        var modalInstance = bootstrap.Modal.getInstance(modal);
+                        modalInstance.hide();
+                        location.reload();
+                    } else {
+                        alert('An error occurred');
+                    }
+                });
         });
     });
 </script>
