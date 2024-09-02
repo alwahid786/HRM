@@ -90,18 +90,22 @@ $perhoursalary_ = 0;
 $perminsalary_ = 0;
 
 if ($user_salary) {
-    if ($startdate && $enddate) {
-        $start = new DateTime($startdate);
-        $end = new DateTime($enddate);
-        $interval = $start->diff($end);
-
-        $perdaysalary_ = $user_salary / ($interval->days + 1);
+    // if ($startdate && $enddate) {
+    //     $start = new DateTime($startdate);
+    //     $end = new DateTime($enddate);
+    //     $interval = $start->diff($end);
+    //     $perdaysalary_ = $user_salary / ($interval->days + 1);
+        $perdaysalary_ = $user_salary / $totalWorkingDaysofThisMonth;
         $perhoursalary_ = $perdaysalary_ / 9;
         $perminsalary_ = $perhoursalary_ / 60;
         $perdaysalary = number_format($perdaysalary_, 2);
         $perhoursalary = number_format($perhoursalary_, 2);
         $perminsalary = number_format($perminsalary_, 2);
-    }
+    // }
+}else{
+    $perdaysalary = number_format(0, 2);
+    $perhoursalary = number_format(0, 2);
+    $perminsalary = number_format(0, 2);
 }
 //////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////

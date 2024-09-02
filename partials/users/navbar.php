@@ -279,6 +279,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['changePassword'])) {
                     <li class="nav-item">
                         <a class="nav-link text-white" href="userpayroll.php">Payroll</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="efficiency.php">Efficiency</a>
+                    </li>
                 </ul>
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item text-white d-flex justify-content-center align-items-center" style="margin: 5px 6px 0 0;">
