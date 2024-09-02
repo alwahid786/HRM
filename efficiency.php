@@ -2,124 +2,74 @@
 session_start();
 require 'config.php';
 
-// Check if user is logged in and is an admin
-if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 'admin') {
+// Check if the user is logged in
+if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['user_id']) && isset($_POST['efficiency_id']) && isset($_POST['assigned_points'])) {
-        $userId = $_POST['user_id'];
-        $efficiencyIds = $_POST['efficiency_id'];
-        $assignedPoints = $_POST['assigned_points'];
-        $created_at = date('Y-m-d H:i:s');
+$userId = $_SESSION['user_id'];
+$stmt = $conn->prepare("SELECT user_type FROM users WHERE id = ?");
+$stmt->bind_param("i", $userId);
+$stmt->execute();
+$stmt->bind_result($userType);
+$stmt->fetch();
+$stmt->close();
 
-        $totalPoints = 0;
-        $efficiencyPointsMap = [];
-
-        $efficiencyStmt = $conn->prepare("SELECT id, efficiency_points FROM efficiency_categories WHERE id IN (" . implode(',', array_fill(0, count($efficiencyIds), '?')) . ")");
-        $efficiencyStmt->bind_param(str_repeat('i', count($efficiencyIds)), ...$efficiencyIds);
-        $efficiencyStmt->execute();
-        $efficiencyResults = $efficiencyStmt->get_result();
-
-        while ($row = $efficiencyResults->fetch_assoc()) {
-            $efficiencyPointsMap[$row['id']] = $row['efficiency_points'];
-        }
-        $efficiencyStmt->close();
-
-        $conn->begin_transaction();
-
-        try {
-            foreach ($efficiencyIds as $index => $efficiencyId) {
-                $points = isset($assignedPoints[$index]) ? $assignedPoints[$index] : 0;
-                $totalPoints += $points;
-
-                $stmt = $conn->prepare("INSERT INTO user_efficiencies (user_id, efficiency_category_id, points, created_at) VALUES (?, ?, ?, ?)");
-                if ($stmt) {
-                    $stmt->bind_param('iiis', $userId, $efficiencyId, $points, $created_at);
-                    $stmt->execute();
-                    $stmt->close();
-                } else {
-                    $conn->rollback();
-                    throw new Exception("Error preparing statement: " . $conn->error);
-                }
-            }
-
-            $maxTotalPoints = array_sum($efficiencyPointsMap);
-            $normalizedScore = ($totalPoints / $maxTotalPoints) * 100;
-
-            $updateStmt = $conn->prepare("INSERT INTO user_efficiency_points (user_id, points, total_points, created_at) VALUES (?, ?, ?, ?)
-                                           ON DUPLICATE KEY UPDATE points = VALUES(points), total_points = VALUES(total_points), created_at = VALUES(created_at)");
-            if ($updateStmt) {
-                $updateStmt->bind_param('iiis', $userId, $normalizedScore, $totalPoints, $created_at);
-                $updateStmt->execute();
-                $updateStmt->close();
-            } else {
-                $conn->rollback();
-                throw new Exception("Error preparing statement: " . $conn->error);
-            }
-
-            $conn->commit();
-            $successMessage = "Efficiency scores updated successfully!";
-        } catch (Exception $e) {
-            $conn->rollback();
-            echo "Transaction failed: " . $e->getMessage();
-        }
-    }
+if ($userType != 'admin' && $userType != 'hradmin' && $userType != 'user') {
+    header("Location: login.php");
+    exit();
 }
 
-// Retrieve all users data with their efficiency points and efficiency average
-$query = "
-    SELECT u.id, u.user_no, u.username, u.email, u.user_type, u.role, u.status,
-           COALESCE(uep.points, 0) AS efficiency_points,
-           COALESCE(AVG(uep1.points), 0) AS efficiency_average
-    FROM users u
-    LEFT JOIN (
-        SELECT user_id, points
-        FROM user_efficiency_points uep1
-        WHERE uep1.id = (
-            SELECT MAX(uep2.id)
-            FROM user_efficiency_points uep2
-            WHERE uep2.user_id = uep1.user_id
-        )
-    ) uep ON u.id = uep.user_id
-    LEFT JOIN user_efficiency_points uep1 ON u.id = uep1.user_id
-    WHERE u.user_type != 'admin' AND u.status != 'blocked'
-    GROUP BY u.id, u.user_no, u.username, u.email, u.user_type, u.role, u.status, uep.points
-";
+if ($userType === 'user') {
+    $query = "
+        SELECT u.id, u.user_no, u.username, u.email, u.user_type, u.role, u.status,
+               COALESCE(uep.points, 0) AS efficiency_points,
+               COALESCE(AVG(uep1.points), 0) AS efficiency_average
+        FROM users u
+        LEFT JOIN (
+            SELECT user_id, points
+            FROM user_efficiency_points uep1
+            WHERE uep1.id = (
+                SELECT MAX(uep2.id)
+                FROM user_efficiency_points uep2
+                WHERE uep2.user_id = uep1.user_id
+            )
+        ) uep ON u.id = uep.user_id
+        LEFT JOIN user_efficiency_points uep1 ON u.id = uep1.user_id
+        WHERE u.id = ?
+        GROUP BY u.id, u.user_no, u.username, u.email, u.user_type, u.role, u.status, uep.points
+    ";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('i', $userId);
+} else {
+    $query = "
+        SELECT u.id, u.user_no, u.username, u.email, u.user_type, u.role, u.status,
+               COALESCE(uep.points, 0) AS efficiency_points,
+               COALESCE(AVG(uep1.points), 0) AS efficiency_average
+        FROM users u
+        LEFT JOIN (
+            SELECT user_id, points
+            FROM user_efficiency_points uep1
+            WHERE uep1.id = (
+                SELECT MAX(uep2.id)
+                FROM user_efficiency_points uep2
+                WHERE uep2.user_id = uep1.user_id
+            )
+        ) uep ON u.id = uep.user_id
+        LEFT JOIN user_efficiency_points uep1 ON u.id = uep1.user_id
+        WHERE u.user_type != 'admin' AND u.status != 'blocked'
+        GROUP BY u.id, u.user_no, u.username, u.email, u.user_type, u.role, u.status, uep.points
+    ";
+    $stmt = $conn->prepare($query);
+}
 
-$result_user_data = $conn->query($query);
+$stmt->execute();
+$result_user_data = $stmt->get_result();
 
 if ($result_user_data === false) {
     echo "Error: " . $conn->error;
 }
-
-
-// $userIdQuery = "SELECT DISTINCT user_id FROM user_efficiency_points";
-// $userIdResult = $conn->query($userIdQuery);
-
-// if ($userIdResult === false) {
-//     echo "Error: " . $conn->error;
-// } else {
-//     while ($row = $userIdResult->fetch_assoc()) {
-//         $userId = $row['user_id'];
-//         $efficiencyTotalAverageQuery = "SELECT AVG(points) AS average_points FROM user_efficiency_points WHERE user_id=$userId";
-//         $totalAverageResult = $conn->query($efficiencyTotalAverageQuery);
-
-//         if ($totalAverageResult === false) {
-//             echo "Error: " . $conn->error;
-//         } else {
-//             $averageRow = $totalAverageResult->fetch_assoc();
-//             if ($averageRow) {
-//                 $averagePoints = $averageRow['average_points'];
-//                 echo " $userId  " . $averagePoints . "<br>";
-//             } else {
-//                 echo " $userId.<br>";
-//             }
-//         }
-//     }
-// }
 
 // Fetch Efficiency Categories
 $fetchEfficiencyCategories = "SELECT * FROM efficiency_categories";
@@ -133,13 +83,59 @@ if ($efficiencysql === false) {
         $efficiencyData[] = $row;
     }
 }
+
+// Fetch user efficiency details if the user type is 'user'
+$userEfficiencyDetails = [];
+if ($userType === 'user') {
+    $query = "
+        SELECT u.username, u.email, u.user_no, u.user_type, u.role, u.status,
+               uep.points AS assigned_points, uep.total_points, uep.created_at
+        FROM users u
+        LEFT JOIN user_efficiency_points uep ON u.id = uep.user_id
+        WHERE u.id = ?
+    ";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('i', $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $userEfficiencyDetails = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+}
+
+// calculate totall efficiency points 
+// $Total_Efficiency_Points_Query = "SELECT SUM(efficiency_points) AS total_points FROM efficiency_categories";
+// $Total_Efficiency_Points = $conn->query($Total_Efficiency_Points_Query);
+// $total_points = 0;
+// if ($Total_Efficiency_Points->num_rows > 0) {
+//     $row = $Total_Efficiency_Points->fetch_assoc();
+//     $total_points = $row['total_points'];
+// }
+
 ?>
 
-<?php include_once 'partials/admin/navbar.php'; ?>
+<?php
+// Include the navbar based on user type
+if ($userType === 'admin') {
+    include_once 'partials/admin/navbar.php';
+} elseif ($userType === 'hradmin') {
+    include_once 'partials/hr/navbar.php';
+} else {
+    include_once 'partials/users/navbar.php';
+}
+?>
 
 <section class="container-fluid" style="padding: 60px 0 40px 0;">
     <div class="container-fluid">
-        <h2>All Users</h2>
+        <?php
+         if ($userType ==  'admin' &&  $userType ==  'hradmin') { ?>
+            <h2>All Users</h2> 
+         <?php
+        } else {
+          ?>
+          <h2>User</h2>
+    <?php
+        }
+      ?>
         <table id="admindatatable" class="table table-striped" style="width:100%">
             <thead>
                 <tr>
@@ -151,8 +147,12 @@ if ($efficiencysql === false) {
                     <th>Status</th>
                     <th>Efficiency Points</th>
                     <th>Efficiency Average</th>
-                    <th>Edit</th>
+                    <?php if ($userType !== 'user'): ?>
+                        <th>Edit</th>
+                    <?php endif; ?>
+                    <?php if ($userType !== 'user'): ?>
                     <th>Efficiency History</th>
+                    <?php endif; ?>
                 </tr>
             </thead>
             <tbody>
@@ -166,33 +166,74 @@ if ($efficiencysql === false) {
                     }
                     ?>
                     <tr>
-                        <td><?php echo ($row['user_no']); ?></td>
-                        <td><?php echo ($row['username']); ?></td>
-                        <td><?php echo ($row['email']); ?></td>
-                        <td><?php echo ($row['user_type']); ?></td>
-                        <td><?php echo ($row['role']); ?></td>
+                        <td><?php echo htmlspecialchars($row['user_no']); ?></td>
+                        <td><?php echo htmlspecialchars($row['username']); ?></td>
+                        <td><?php echo htmlspecialchars($row['email']); ?></td>
+                        <td><?php echo htmlspecialchars($row['user_type']); ?></td>
+                        <td><?php echo htmlspecialchars($row['role']); ?></td>
                         <td>
-                            <div class="<?php echo ($statusClass); ?>"><?php echo ($row['status']); ?></div>
+                            <div class="<?php echo htmlspecialchars($statusClass); ?>"><?php echo htmlspecialchars($row['status']); ?></div>
                         </td>
-                        <td><?php echo ($row['efficiency_points']); ?></td>
-                        <td><?php echo (number_format($row['efficiency_average'], 2)); ?></td>
-                        <td class="d-flex justify-content-center align-items-center">
-                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#leavelimitModal"
-                                data-userid="<?php echo ($row['id']); ?>">
-                                <img src="images/icons/edit.png" width="24px" height="24px">
-                            </button>
-                        </td>
+                        <td><?php echo htmlspecialchars($row['efficiency_points']); ?></td>
+                        <td><?php echo number_format($row['efficiency_average'], 2); ?></td>
+                        <?php if ($userType !== 'user'): ?>
+                            <td class="d-flex justify-content-center align-items-center">
+                                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#leavelimitModal"
+                                    data-userid="<?php echo htmlspecialchars($row['id']); ?>">
+                                    <img src="images/icons/edit.png" width="24px" height="24px">
+                                </button>
+                            </td>
+                        <?php endif; ?>
+                        <?php if ($userType !== 'user'): ?>
                         <td>
                             <a href="efficiencydetails.php?user_id=<?php echo urlencode($row['id']); ?>">
                                 <img src="images/icons/history.png" width="24px" height="24px" class="img-fluid">
                             </a>
                         </td>
+                        <?php endif; ?>
                     </tr>
                 <?php endwhile; ?>
             </tbody>
         </table>
     </div>
 </section>
+
+<?php if ($userType === 'user'): ?>
+    <section class="container-fluid" style="padding: 60px 0 40px 0;">
+        <div class="container-fluid">
+
+            <h2>Efficiency Details for User:</h2>
+
+            <table class="table table-striped" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>User Type</th>
+                        <th>Role</th>
+                        <th>Points Assigned</th>
+                        <th>Total Points</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($userEfficiencyDetails as $detail): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($detail['username']); ?></td>
+                            <td><?php echo htmlspecialchars($detail['email']); ?></td>
+                            <td><?php echo htmlspecialchars($detail['user_type']); ?></td>
+                            <td><?php echo htmlspecialchars($detail['role']); ?></td>
+                            <td><?php echo htmlspecialchars($detail['assigned_points']); ?></td>
+                            <td><?php echo htmlspecialchars($detail['total_points']); ?></td>
+                            <td><?php echo $detail['created_at'] ? date('Y-M-d', strtotime($detail['created_at'])) : ''; ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </section>
+<?php else: ?>
+<?php endif; ?>
 
 
 <!-- Update User Efficiency Modal -->
